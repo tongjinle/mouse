@@ -11,4 +11,23 @@
 
 平台交互API:
 	1.用户进入游戏界面
+	url pararms
+	{
+		// 房间名,让一起游戏的玩家可以进入同一个房间
+		gameId:number,
+		// 用户唯一识别
+		userId:number,
+		// 用户名(可以重复)
+		username:string,
+		// 扩展信息
+		ext:{
+			// 用户头像的url地址
+			logoUrl:string
+		}
+	}
+
 	2.返回比赛结果给平台
+	{
+		gameId:number,
+		result:number[]
+	}
