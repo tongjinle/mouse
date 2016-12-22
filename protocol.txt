@@ -1,16 +1,105 @@
 游戏API:
 	1.用户来到房间(push)
+		req:
+		route:'enterRoom'
+		{
+			gameId:number,
+			userId:number,
+			username:string,
+			ext:{
+				logoUrl:string
+			}
+		}
+
+		push:
+		route:'onenterRoom'
+		{
+			gameId:number,
+			userId:number,
+			username:string,
+			ext:{
+				logoUrl:string
+			}
+		}
 	2.用户离开房间(push)
+		req:
+		route:'leaveRoom'
+		{
+			
+		}
+
+		push:
+		route:'onleaveRoom'
+		{
+			userId:number
+		}
+
 	3.游戏开始(push)
-	4.用户a把老鼠放入一个杯子
+		push
+		route:'ongameStart'
+		{
+			userList:{
+				userId:number,
+				// cat || dog
+				animal:string,
+				// guess(猜测) || roll(晃杯子)
+				role:string
+			}[]
+		}
+
+	4.用户a把老鼠放入一个杯子(push)
+		req:
+		route:'putMouse'
+		{
+			cupIndex:number
+		}
+
+		push:
+		route:'onputMouse'
+		{
+			cupIndex:number
+		}
+
 	5.用户a晃动杯子(push)
+		** 每隔50ms取一个点
+		req:
+		route:'rollCup'
+		{
+			posiList:{x:number,y:number}[]
+		}
+
+		push:'onrollCup'
+		{
+			posiList:{x:number,y:number}[]
+		}
+
 	6.用户b猜测哪个杯子是老鼠(push)
-	7.公布一局猜测结果(push)
+		req:
+		route:'guess'
+		{
+			cupIndex:number
+		}
+
+		push:
+		route:'onGuess'
+		{
+			cupIndex:number,
+			isCorrect:boolean
+		}
+
+
+
 	8.公布总比分(push)
+		push:
+		route:'onpublishScore'
+		{
+			userIdList:number[],
+			result:number[]
+		}
 
 
 平台交互API:
-	1.用户进入游戏界面
+	1.用户进入游戏界面(通过一个url跳转到游戏页面)
 	url pararms
 	{
 		// 房间名,让一起游戏的玩家可以进入同一个房间
@@ -29,5 +118,6 @@
 	2.返回比赛结果给平台
 	{
 		gameId:number,
+		userIdList:number[],
 		result:number[]
 	}
