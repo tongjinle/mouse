@@ -57,7 +57,7 @@
 		push:
 		route:'onputMouse'
 		{
-			cupIndex:number
+			
 		}
 
 	5.用户a晃动杯子(push)
@@ -94,7 +94,7 @@
 		route:'onpublishScore'
 		{
 			userIdList:number[],
-			result:number[]
+			result:boolean[]
 		}
 
 

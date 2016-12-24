@@ -3,7 +3,9 @@ import User from './user';
 import CONFIG from './config';
 import { Animal, Role, Position, Score } from './types';
 
-export class Game {
+export default class Game {
+	// id
+	id: string;
 	// 玩家列表
 	userList: User[];
 	// 比分列表
@@ -21,7 +23,12 @@ export class Game {
 	// 晃动的轨迹
 	path: Position[];
 
-	constructor(userList: User[]) {
+	public get isOver() : boolean {
+		return this.gameCount-1 == this.roundCount;
+	}
+
+	constructor(id:string,userList: User[]) {
+		this.id = id;
 		this.userList = userList;
 		this.scoreList = [];
 		this.roundCount = 0;
@@ -30,7 +37,7 @@ export class Game {
 	}
 
 	// 放置mouse
-	putMouse(userId: number, cupIndex: number): boolean {
+	putMouse(userId: string, cupIndex: number): boolean {
 		let us = this.getUserById(userId);
 		if (!us || us.role != Role.roll) {
 			return false;
@@ -43,7 +50,7 @@ export class Game {
 	}
 
 	// 晃动杯子
-	rollCup(userId: number, posiList: Position[]): boolean {
+	rollCup(userId: string, posiList: Position[]): boolean {
 		let us = this.getUserById(userId);
 		if (!us || us.role != Role.roll) {
 			return false;
@@ -53,7 +60,7 @@ export class Game {
 	}
 
 	// 猜测mouse
-	guessMouse(userId: number, cupIndex: number): boolean {
+	guessMouse(userId: string, cupIndex: number): boolean {
 		let us = this.getUserById(userId);
 		if (!us || us.role != Role.guess) {
 			return false;
@@ -75,7 +82,7 @@ export class Game {
 	// 回合
 	// false表示已经整个游戏都已经结束了
 	round():boolean{
-		if(this.roundCount == this.gameCount-1){
+		if(this.isOver){
 			return false;
 		}
 		this.reset();
@@ -99,7 +106,7 @@ export class Game {
 
 
 	// 通过userId获取user
-	private getUserById(userId: number): User {
+	private getUserById(userId: string): User {
 		return _.find(this.userList, us => us.id == userId);
 	}
 

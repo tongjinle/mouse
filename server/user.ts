@@ -2,7 +2,7 @@ import { Animal, Role } from './types';
 
 
 export default class User{
-	id: number;
+	id: string;
 	name: string;
 	logoUrl: string;
 
