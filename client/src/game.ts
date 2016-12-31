@@ -13,7 +13,7 @@ namespace Client {
             this.userList = [];
             this.cupList = [];
 
-            
+
         }
 
         createStage() {
@@ -24,11 +24,13 @@ namespace Client {
             }
             this.createCups();
 
+            // mock
             this.mockPutMouse();
-            console.trace('***');
+
+            this.createHubs();
         }
 
-        private mockPutMouse(){
+        private mockPutMouse() {
             this.cupList[1].putMouse();
             this.cupList[1].showMouse();
         }
@@ -69,11 +71,31 @@ namespace Client {
                 sp.y = this.stage.height / 2 - 120;
                 this.stage.addChild(sp);
 
-                cu.setShadowOpacity((cupCount-i)/cupCount);
+                cu.setShadowOpacity((cupCount - i) / cupCount);
 
                 cupList.push(cu);
             }
         }
+
+        private createHubs() {
+            let userList = this.userList;
+            let hu: Hub;
+            for (let us of userList) {
+                if (us == this.currUser) {
+                    hu = new Hub(HubPosition.bottom);
+                    hu.sp.y = this.stage.stageHeight - hu.sp.height;
+                } else {
+                    hu = new Hub(HubPosition.top);
+                    hu.sp.y = 0;
+                }
+                hu.sp.x = this.stage.stageWidth / 2 - hu.sp.width / 2;
+
+                this.stage.addChild(hu.sp);
+            }
+        }
+
+
+
 
     }
 }

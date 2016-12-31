@@ -22,4 +22,10 @@ namespace Client {
         afterWatching,
         afterGuess
     }
+
+
+    export enum HubPosition{
+        top,
+        bottom
+    }
 }
