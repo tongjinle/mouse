@@ -115,18 +115,15 @@ class Main extends egret.DisplayObjectContainer {
 
     private textfield: egret.TextField;
 
-    private createBg() {
-        let bg: egret.Bitmap = this.createBitmapByName('home_bg_scene_png');
-        this.addChild(bg);
-    }
+
 
     private mockUserList(): Client.User[] {
         let userList: Client.User[] = [];
         let u: Client.User;
-        u = new Client.User('100', 'dino', Client.Animal.cat, Client.Role.guesser);
+        u = new Client.User('100', 'dino', Client.Animal.dog, Client.Role.guesser);
         userList.push(u);
 
-        u = new Client.User('200', 'xia', Client.Animal.dog, Client.Role.roller);
+        u = new Client.User('200', 'xia', Client.Animal.cat, Client.Role.roller);
         userList.push(u);
 
         return userList;
@@ -140,7 +137,7 @@ class Main extends egret.DisplayObjectContainer {
      */
     private createGameScene(): void {
         let userList: Client.User[] = this.mockUserList();
-        let game = this.game = new Client.Game(this);
+        let game = this.game = new Client.Game(this.stage);
         game.userList = userList;
         game.currUser = game.userList[0];
         game.createStage();

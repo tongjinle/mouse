@@ -2,14 +2,16 @@ namespace Client {
     export class Game {
         currUser: User;
         userList: User[];
+        cupList: Cup[];
 
-        private stage: egret.DisplayObjectContainer;
+        private stage: egret.Stage;
         private sh: egret.SpriteSheet;
-        constructor(stage: egret.DisplayObjectContainer) {
+        constructor(stage: egret.Stage) {
             this.stage = stage;
             this.sh = RES.getRes('basic_png');
 
             this.userList = [];
+            this.cupList = [];
 
             this.createStage();
         }
@@ -20,11 +22,14 @@ namespace Client {
                 this.createUser(user);
 
             }
+            this.createCups();
         }
 
         private createBg() {
             let sh: egret.SpriteSheet = this.sh;
             let bg: egret.Bitmap = new egret.Bitmap(sh.getTexture('home_bg_scene_png'));
+            bg.x = this.stage.stageWidth / 2 - bg.width / 2;
+
             this.stage.addChild(bg);
         }
 
@@ -35,17 +40,32 @@ namespace Client {
             if (this.currUser == user) {
                 // 使用背影
                 face = user.backFace;
-                face.x = 300;
-                face.y = this.stage.height - face.height - 140;
-                this.stage.addChildAt(face, 2);
+                face.y = this.stage.stageHeight - face.height - 140;
+                this.stage.addChild(face);
             } else {
                 face = user.face;
-                face.x = 300;
                 face.y = 215;
             }
-
-            face.x = this.stage.width / 2 - face.height / 2;
-            this.stage.addChildAt(face, 2);
+            face.x = this.stage.stageWidth / 2 - face.width / 2;
+            this.stage.addChild(face);
         }
+
+        private createCups() {
+            let cupCount = 3;
+            let cupList = this.cupList;
+            for (let i = 0; i < cupCount; i++) {
+                let cu = new Cup(i);
+                let sp = cu.cupSp;
+                let margin = (this.stage.stageWidth - cupCount * sp.width) / (cupCount + 1);
+                sp.x = margin + (sp.width + margin) * i;
+                sp.y = this.stage.height / 2 - 120;
+                this.stage.addChild(sp);
+
+                cu.setShadowOpacity((cupCount-i)/cupCount);
+
+                cupList.push(cu);
+            }
+        }
+
     }
 }

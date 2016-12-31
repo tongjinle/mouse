@@ -10,6 +10,7 @@ var game_file_list = [
 	"libs/modules/res/res.js",
 	"bin-debug/LoadingUI.js",
 	"bin-debug/Main.js",
+	"bin-debug/cup.js",
 	"bin-debug/game.js",
 	"bin-debug/types.js",
 	"bin-debug/user.js",
