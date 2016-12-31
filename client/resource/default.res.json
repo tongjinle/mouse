@@ -1,23 +1,28 @@
 {
 	"groups":[
 	{
-		"keys":"bg_jpg,egret_icon_png,description_json",
+		"keys":"egret_icon_png,basic_png,cat_png,dog_png",
 		"name":"preload"
 	}],
 	"resources":[
 	{
-		"name":"bg_jpg",
-		"type":"image",
-		"url":"assets/bg.jpg"
+		"name":"basic_png",
+		"type":"sheet",
+		"url":"assets/basic.json"
+	},
+	{
+		"name":"cat_png",
+		"type":"sheet",
+		"url":"assets/cat.json"
+	},
+	{
+		"name":"dog_png",
+		"type":"sheet",
+		"url":"assets/dog.json"
 	},
 	{
 		"name":"egret_icon_png",
 		"type":"image",
 		"url":"assets/egret_icon.png"
-	},
-	{
-		"name":"description_json",
-		"type":"json",
-		"url":"config/description.json"
 	}]
 }

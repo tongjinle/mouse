@@ -1,0 +1,11 @@
+{"file":"dog.png","frames":{
+"dog_back_png":{"x":1,"y":1,"w":341,"h":316,"offX":6,"offY":5,"sourceW":347,"sourceH":321},
+"dog_front_png":{"x":344,"y":1,"w":186,"h":211,"offX":0,"offY":0,"sourceW":186,"sourceH":211},
+"01_png":{"x":1,"y":319,"w":186,"h":205,"offX":0,"offY":0,"sourceW":186,"sourceH":205},
+"02_png":{"x":344,"y":214,"w":186,"h":205,"offX":0,"offY":0,"sourceW":186,"sourceH":205},
+"03_png":{"x":720,"y":208,"w":186,"h":205,"offX":0,"offY":0,"sourceW":186,"sourceH":205},
+"04_png":{"x":532,"y":208,"w":186,"h":205,"offX":0,"offY":0,"sourceW":186,"sourceH":205},
+"05_png":{"x":720,"y":1,"w":186,"h":205,"offX":0,"offY":0,"sourceW":186,"sourceH":205},
+"06_png":{"x":532,"y":1,"w":186,"h":205,"offX":0,"offY":0,"sourceW":186,"sourceH":205},
+"07_png":{"x":720,"y":415,"w":186,"h":205,"offX":0,"offY":0,"sourceW":186,"sourceH":205},
+"08_png":{"x":532,"y":415,"w":186,"h":205,"offX":0,"offY":0,"sourceW":186,"sourceH":205}}}
