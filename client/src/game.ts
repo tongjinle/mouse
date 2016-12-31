@@ -13,7 +13,7 @@ namespace Client {
             this.userList = [];
             this.cupList = [];
 
-            this.createStage();
+            
         }
 
         createStage() {
@@ -23,6 +23,14 @@ namespace Client {
 
             }
             this.createCups();
+
+            this.mockPutMouse();
+            console.trace('***');
+        }
+
+        private mockPutMouse(){
+            this.cupList[1].putMouse();
+            this.cupList[1].showMouse();
         }
 
         private createBg() {
