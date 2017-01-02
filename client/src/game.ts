@@ -1,3 +1,5 @@
+/// <reference path="../libs/underscore/underscore.d.ts" />
+
 namespace Client {
     export class Game {
         currUser: User;
@@ -32,6 +34,7 @@ namespace Client {
             this.createHubs();
             // mock
             this.mockScore();
+            this.mockHubRuntimer();
 
         }
 
@@ -43,6 +46,17 @@ namespace Client {
         private mockScore() {
             this.addScore(true);
             this.addScore(false);
+        }
+
+        private mockHubRuntimer() {
+            _.find(this.hubList, hu => {
+                if (this.currUser == hu.user) {
+                    hu.runTimer(5, () => {
+                        console.log('5s done!!');
+                    });
+                    return true;
+                }
+            });
         }
 
         private createBg() {

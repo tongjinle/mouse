@@ -1,7 +1,7 @@
 {
 	"groups":[
 	{
-		"keys":"egret_icon_png,basic_png,cat_png,dog_png",
+		"keys":"egret_icon_png,basic_png,cat_png,dog_png,nums",
 		"name":"preload"
 	}],
 	"resources":[
@@ -24,5 +24,11 @@
 		"name":"egret_icon_png",
 		"type":"image",
 		"url":"assets/egret_icon.png"
-	}]
+	},
+	{
+		"name":"nums",
+		"type":"font",
+		"url":"assets/font.fnt"
+	}
+	]
 }

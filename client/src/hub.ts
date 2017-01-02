@@ -5,10 +5,15 @@ namespace Client {
         sp: egret.Sprite;
         private bgImg: egret.Bitmap;
         private scoreImgList: egret.Bitmap[];
+        // 倒计时
+        private timer: egret.TextField;
+        private timerListener: Function;
         // 决定了要插入的位置
         private index: number;
         // hub的上下位置
         private posi: HubPosition;
+        // 定时器
+        private ti: egret.Timer;
         // 玩家
         user: User;
 
@@ -25,6 +30,7 @@ namespace Client {
 
             this.createBg();
             this.createLogo();
+            this.createOther();
         }
 
         private createBg() {
@@ -64,6 +70,34 @@ namespace Client {
             }, this, RES.ResourceItem.TYPE_IMAGE);
         }
 
+
+        private createOther() {
+            if (HubPosition.top == this.posi) {
+                let img = new egret.Bitmap(this.sh.getTexture('menu_icon_png'));
+                img.x = this.sp.width - 20 - img.width;
+                img.y = 15;
+                this.sp.addChild(img);
+                img.touchEnabled = true;
+                img.addEventListener(egret.TouchEvent.TOUCH_END, () => {
+                    console.log('touch menu_icon');
+                }, img);
+            } else {
+                let tx = new egret.TextField();
+                // tx.fontFamily = RES.getRes('nums');
+                tx.text = '10';
+                tx.x = this.sp.width - 150;
+                tx.y = 40;
+                tx.width = 145;
+                tx.height = 120;
+                tx.size = 80;
+                // tx.scaleX = tx.scaleY = 5;
+                tx.textAlign = egret.HorizontalAlign.CENTER;
+                tx.verticalAlign = egret.VerticalAlign.MIDDLE;
+                this.sp.addChild(tx);
+                this.timer = tx;
+            }
+        }
+
         addScore(isWin: boolean) {
             let scoreImgName: string;
             if (HubPosition.top == this.posi) {
@@ -73,6 +107,27 @@ namespace Client {
             }
             this.scoreImgList[this.index].texture = this.sh.getTexture(scoreImgName);
             this.index++;
+        }
+
+        runTimer(duration: number, next: () => void) {
+            let ti = this.ti;
+            if (!ti) {
+                ti = this.ti = new egret.Timer(1000, duration);
+
+                this.timerListener = () => {
+                    this.timer.text = (parseInt(this.timer.text) - 1).toString();
+                    console.log('****timer****');
+                    if (this.timer.text == '0') {
+                        next();
+                        ti.stop();
+                    }
+                };
+                ti.addEventListener(egret.TimerEvent.TIMER, this.timerListener, this);
+            }
+
+            this.timer.text = duration.toString();
+            ti.start();
+
         }
     }
 }
