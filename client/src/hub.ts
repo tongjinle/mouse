@@ -10,19 +10,21 @@ namespace Client {
         // hub的上下位置
         private posi: HubPosition;
         // 玩家
-        user:User;
+        user: User;
 
         private sh: egret.SpriteSheet;
 
-        constructor(posi: HubPosition) {
+        constructor(user: User, posi: HubPosition) {
             this.sh = RES.getRes('basic_png');
 
+            this.user = user;
             this.index = 0;
             this.posi = posi;
             this.sp = new egret.Sprite();
             this.scoreImgList = [];
 
             this.createBg();
+            this.createLogo();
         }
 
         private createBg() {
@@ -48,6 +50,18 @@ namespace Client {
                 this.sp.addChild(sc);
                 this.scoreImgList.push(sc);
             }
+        }
+
+        private createLogo() {
+            let loader = RES.getResByUrl(this.user.logoUrl, te => {
+                let img = new egret.Bitmap(te);
+                img.x = 20;
+                img.y = this.posi == HubPosition.top ? 15 : 55;
+                img.width = 100;
+                img.height = 100;
+
+                this.sp.addChild(img);
+            }, this, RES.ResourceItem.TYPE_IMAGE);
         }
 
         addScore(isWin: boolean) {

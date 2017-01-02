@@ -121,9 +121,12 @@ class Main extends egret.DisplayObjectContainer {
         let userList: Client.User[] = [];
         let u: Client.User;
         u = new Client.User('100', 'dino', Client.Animal.dog, Client.Role.guesser);
+        u.logoUrl = './resource/assets/u1.jpeg';
         userList.push(u);
 
         u = new Client.User('200', 'xia', Client.Animal.cat, Client.Role.roller);
+        u.logoUrl = './resource/assets/u2.jpeg';
+        // u.logoUrl = 'http://www.easyicon.net/api/resizeApi.php?id=1196559&size=128';
         userList.push(u);
 
         return userList;

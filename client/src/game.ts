@@ -3,7 +3,7 @@ namespace Client {
         currUser: User;
         userList: User[];
         cupList: Cup[];
-        hubList:Hub[];
+        hubList: Hub[];
 
         private stage: egret.Stage;
         private sh: egret.SpriteSheet;
@@ -13,7 +13,7 @@ namespace Client {
 
             this.userList = [];
             this.cupList = [];
-            this.hubList =[];
+            this.hubList = [];
 
 
         }
@@ -40,7 +40,7 @@ namespace Client {
             this.cupList[1].showMouse();
         }
 
-        private mockScore(){
+        private mockScore() {
             this.addScore(true);
             this.addScore(false);
         }
@@ -92,13 +92,12 @@ namespace Client {
             let hu: Hub;
             for (let us of userList) {
                 if (us == this.currUser) {
-                    hu = new Hub(HubPosition.bottom);
+                    hu = new Hub(us, HubPosition.bottom);
                     hu.sp.y = this.stage.stageHeight - hu.sp.height;
                 } else {
-                    hu = new Hub(HubPosition.top);
+                    hu = new Hub(us, HubPosition.top);
                     hu.sp.y = 0;
                 }
-                hu.user = us;
                 hu.sp.x = this.stage.stageWidth / 2 - hu.sp.width / 2;
 
                 this.stage.addChild(hu.sp);
@@ -107,12 +106,12 @@ namespace Client {
         }
 
         // isWin是站在guess的角度
-        addScore(isWin:boolean){
-            this.hubList.forEach(hu=>{
-                if(Role.guesser == hu.user.role ){
+        addScore(isWin: boolean) {
+            this.hubList.forEach(hu => {
+                if (Role.guesser == hu.user.role) {
                     hu.user.scoreList.push(isWin);
                     hu.addScore(isWin);
-                }else{
+                } else {
                     hu.user.scoreList.push(!isWin);
                     hu.addScore(!isWin);
                 }
