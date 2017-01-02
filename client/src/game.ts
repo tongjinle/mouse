@@ -3,6 +3,7 @@ namespace Client {
         currUser: User;
         userList: User[];
         cupList: Cup[];
+        hubList:Hub[];
 
         private stage: egret.Stage;
         private sh: egret.SpriteSheet;
@@ -12,6 +13,7 @@ namespace Client {
 
             this.userList = [];
             this.cupList = [];
+            this.hubList =[];
 
 
         }
@@ -28,11 +30,19 @@ namespace Client {
             this.mockPutMouse();
 
             this.createHubs();
+            // mock
+            this.mockScore();
+
         }
 
         private mockPutMouse() {
             this.cupList[1].putMouse();
             this.cupList[1].showMouse();
+        }
+
+        private mockScore(){
+            this.addScore(true);
+            this.addScore(false);
         }
 
         private createBg() {
@@ -88,13 +98,26 @@ namespace Client {
                     hu = new Hub(HubPosition.top);
                     hu.sp.y = 0;
                 }
+                hu.user = us;
                 hu.sp.x = this.stage.stageWidth / 2 - hu.sp.width / 2;
 
                 this.stage.addChild(hu.sp);
+                this.hubList.push(hu);
             }
         }
 
-
+        // isWin是站在guess的角度
+        addScore(isWin:boolean){
+            this.hubList.forEach(hu=>{
+                if(Role.guesser == hu.user.role ){
+                    hu.user.scoreList.push(isWin);
+                    hu.addScore(isWin);
+                }else{
+                    hu.user.scoreList.push(!isWin);
+                    hu.addScore(!isWin);
+                }
+            });
+        }
 
 
     }
