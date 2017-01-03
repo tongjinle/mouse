@@ -13,6 +13,7 @@ var game_file_list = [
 	"bin-debug/Main.js",
 	"bin-debug/cup.js",
 	"bin-debug/game.js",
+	"bin-debug/hand.js",
 	"bin-debug/hub.js",
 	"bin-debug/types.js",
 	"bin-debug/user.js",

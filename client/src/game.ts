@@ -6,6 +6,9 @@ namespace Client {
         userList: User[];
         cupList: Cup[];
         hubList: Hub[];
+        hand: Hand;
+
+        private halo: egret.Bitmap;
 
         private stage: egret.Stage;
         private sh: egret.SpriteSheet;
@@ -35,6 +38,8 @@ namespace Client {
             // mock
             this.mockScore();
             this.mockHubRuntimer();
+
+            this.createHand();
 
         }
 
@@ -117,6 +122,39 @@ namespace Client {
                 this.stage.addChild(hu.sp);
                 this.hubList.push(hu);
             }
+        }
+
+
+        private createHand() {
+            let hand = this.hand = new Hand();
+            hand.sp.x = 500;
+            hand.sp.y = 600;
+            this.stage.addChild(hand.sp);
+
+
+
+            this.stage.addEventListener(egret.TouchEvent.TOUCH_END, (e: egret.TouchEvent) => {
+                let x = e.stageX;
+                let y = e.stageY;
+
+                hand.toggle(false);
+                // 探测hand是否碰到了cup
+                _.each(this.cupList, (cu) => {
+                    let cux = cu.cupSp.x;
+                    let cuy = cu.cupSp.y;
+                    let cux2 = cux + cu.cupSp.width;
+                    let cuy2 = cuy + cu.cupSp.height;
+
+
+
+                    if (cux <= x && x <= cux2 && cuy <= y && y <= cuy2) {
+                        hand.toggle(true);
+                        hand.sp.x = cux + cu.cupSp.width / 2;
+                        hand.sp.y = cuy + cu.cupSp.height / 2;
+                    }
+                });
+            }, this);
+
         }
 
         // isWin是站在guess的角度
