@@ -13,6 +13,7 @@ namespace Client {
     export enum UserStatus{
         // roller
         beforePutMouse,
+        beforeRolling,
         rolling,
         afterRoll,
         

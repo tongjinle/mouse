@@ -110,10 +110,8 @@ namespace Client {
         }
 
         runTimer(duration: number, next: () => void) {
-            let ti = this.ti;
-            if (!ti) {
-                ti = this.ti = new egret.Timer(1000, duration);
-
+            if (!this.ti) {
+                this.ti = new egret.Timer(1000);
                 this.timerListener = () => {
                     this.timer.text = (parseInt(this.timer.text) - 1).toString();
                     console.log('****timer****');
@@ -122,9 +120,13 @@ namespace Client {
                         ti.stop();
                     }
                 };
-                ti.addEventListener(egret.TimerEvent.TIMER, this.timerListener, this);
+                this.ti.addEventListener(egret.TimerEvent.TIMER, this.timerListener, this);
+
             }
 
+
+            let ti: egret.Timer = this.ti;
+            ti.repeatCount = duration;
             this.timer.text = duration.toString();
             ti.start();
 
@@ -132,7 +134,7 @@ namespace Client {
 
         clearTimer() {
             let ti = this.ti;
-            ti.removeEventListener(egret.TimerEvent.TIMER, this.timerListener, this);
+            ti.stop();
             this.timer.text = '0';
         }
     }
