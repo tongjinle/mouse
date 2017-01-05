@@ -90,7 +90,7 @@ namespace Client {
             this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
                 if (UserStatus.beforePutMouse == this.roller.status) {
 
-                    let cu = this.cupList[0];
+                    let cu = this.cupList[Math.floor(Math.random()*this.cupList.length)];
                     this.putMouse(cu);
                 }
             });
