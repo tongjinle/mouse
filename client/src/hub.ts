@@ -110,24 +110,37 @@ namespace Client {
         }
 
         runTimer(duration: number, next: () => void) {
+            console.log('...timer...');
+
             if (!this.ti) {
                 this.ti = new egret.Timer(1000);
                 this.timerListener = () => {
                     this.timer.text = (parseInt(this.timer.text) - 1).toString();
-                    console.log('****timer****');
-                    if (this.timer.text == '0') {
+                    // console.log(this.ti.repeatCount,this.timer.text,this.ti.currentCount);
+                    // if (this.timer.text == '0') {
+                    //     next();
+                    //     ti.stop();
+                    // }
+                    if(this.ti.currentCount == this.ti.repeatCount){
                         next();
-                        ti.stop();
                     }
                 };
                 this.ti.addEventListener(egret.TimerEvent.TIMER, this.timerListener, this);
+                // this.ti.addEventListener(egret.TimerEvent.ENDED,()=>{
+                //     console.log('ended');
+                //     next();
 
+                // },this);
             }
 
 
             let ti: egret.Timer = this.ti;
-            ti.repeatCount = duration;
             this.timer.text = duration.toString();
+            ti.repeatCount = duration;
+            // ti.currentCount =0;
+            // console.log(ti.currentCount);
+            ti.reset();
+            // console.log(ti.currentCount);
             ti.start();
 
         }

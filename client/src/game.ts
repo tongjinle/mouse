@@ -21,7 +21,7 @@ namespace Client {
             return _.find(this.hubList, hu => hu.user == this.currUser);
         }
 
-        private halo: egret.Bitmap;
+        // private halo: egret.Bitmap;
         private currCup: Cup;
         private currCupPosi: { x: number, y: number };
 
@@ -109,7 +109,8 @@ namespace Client {
             mouseImg.alpha = 1;
             this.stage.addChild(mouseImg);
             egret.Tween.get(mouseImg)
-                .to({ y: posi.y + height, alpha: .3 }, 800).call(() => {
+                .to({ y: posi.y + height, alpha: .3 }, 800)
+                .call(() => {
                     this.stage.removeChild(mouseImg);
                     cup.putMouse();
                     cup.showMouse();
@@ -298,7 +299,7 @@ namespace Client {
                     return;
                 }
 
-                // this.endRoll();
+                this.endRoll();
             }, this);
 
         }
@@ -306,14 +307,18 @@ namespace Client {
         private startRollTimer() {
             this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
                 this.endRoll();
+                this.hand.toggle(false);
+                this.roller.status = UserStatus.afterRoll;
             });
         }
 
         private endRoll() {
+            if(!this.currCup){
+                return;
+            }
             this.currCup.cupSp.x = this.currCupPosi.x;
             this.currCup.cupSp.y = this.currCupPosi.y;
 
-            this.roller.status = UserStatus.afterRoll;
         }
 
         private swapCup(cup: Cup) {
