@@ -319,6 +319,8 @@ namespace Client {
             this.currCup.cupSp.x = this.currCupPosi.x;
             this.currCup.cupSp.y = this.currCupPosi.y;
 
+            this.hand.toggle(false);
+
         }
 
         private swapCup(cup: Cup) {
