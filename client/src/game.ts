@@ -71,6 +71,8 @@ namespace Client {
 
         private startPutMouseTimer() {
             this.roller.status = UserStatus.beforePutMouse;
+            this.guesser.status = UserStatus.watching;
+
             // show tips
 
             this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => {
@@ -170,15 +172,16 @@ namespace Client {
             let face: egret.Bitmap;
             if (this.currUser == user) {
                 // 使用背影
-                face = user.backFace;
-                face.y = this.stage.stageHeight - face.height - 140;
-                this.stage.addChild(face);
+                user.isFront = false;
+                user.face.y = this.stage.stageHeight - user.face.height - 140;
             } else {
-                face = user.face;
-                face.y = 215;
+                user.isFront = true;
+                user.face.y = 215;
             }
-            face.x = this.stage.stageWidth / 2 - face.width / 2;
+            face = user.face;
+            face.x = this.stage.stageWidth / 2 - user.face.width / 2;
             this.stage.addChild(face);
+
         }
 
         private createCups() {
@@ -309,18 +312,20 @@ namespace Client {
                 this.endRoll();
                 this.hand.toggle(false);
                 this.roller.status = UserStatus.afterRoll;
+
+                this.guesser.status = UserStatus.afterWatching; 
             });
         }
 
         private endRoll() {
-            if(!this.currCup){
+            if (!this.currCup) {
                 return;
             }
             this.currCup.cupSp.x = this.currCupPosi.x;
             this.currCup.cupSp.y = this.currCupPosi.y;
 
             this.hand.toggle(false);
-
+            this.roller.status = UserStatus.beforeRolling;
         }
 
         private swapCup(cup: Cup) {
@@ -355,6 +360,17 @@ namespace Client {
                 }
             });
         }
+
+        guess(cup: Cup) {
+            if (this.currUser != this.guesser) {
+                return;
+            }
+
+            if (this.guesser.status != UserStatus.afterWatching) {
+
+            }
+        }
+
 
 
     }

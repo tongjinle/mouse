@@ -14,6 +14,7 @@ namespace Client {
         private posi: HubPosition;
         // 定时器
         private ti: egret.Timer;
+        private timerNext:Function;
         // 玩家
         user: User;
 
@@ -111,18 +112,18 @@ namespace Client {
 
         runTimer(duration: number, next: () => void) {
             console.log('...timer...');
-
+            this.timerNext = next;
             if (!this.ti) {
                 this.ti = new egret.Timer(1000);
                 this.timerListener = () => {
                     this.timer.text = (parseInt(this.timer.text) - 1).toString();
-                    // console.log(this.ti.repeatCount,this.timer.text,this.ti.currentCount);
+                    console.log(this.ti.repeatCount,this.timer.text,this.ti.currentCount);
                     // if (this.timer.text == '0') {
                     //     next();
                     //     ti.stop();
                     // }
                     if(this.ti.currentCount == this.ti.repeatCount){
-                        next();
+                        this.timerNext();
                     }
                 };
                 this.ti.addEventListener(egret.TimerEvent.TIMER, this.timerListener, this);
