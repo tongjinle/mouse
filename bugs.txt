@@ -1,0 +1,15 @@
+bugs:
+1 交换完杯子之后,杯子的阴影遮挡住了杯子
+2 roll完之后应该有对话
+3 不应该一开始就是watching,应该是beforeWatch
+
+feature:
+1 猜测老鼠在哪个杯子
+2 比赛结果
+3 重置比赛
+4 比分
+5 提示可以roll cup
+
+
+fixed:
+
