@@ -11,10 +11,12 @@ var game_file_list = [
 	"libs/underscore/underscore.js",
 	"bin-debug/LoadingUI.js",
 	"bin-debug/Main.js",
+	"bin-debug/config.js",
 	"bin-debug/cup.js",
 	"bin-debug/game.js",
 	"bin-debug/hand.js",
 	"bin-debug/hub.js",
+	"bin-debug/tip.js",
 	"bin-debug/types.js",
 	"bin-debug/user.js",
 	//----auto game_file_list end----

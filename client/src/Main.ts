@@ -142,8 +142,9 @@ class Main extends egret.DisplayObjectContainer {
         let userList: Client.User[] = this.mockUserList();
         let game = this.game = new Client.Game(this.stage);
         game.userList = userList;
-        game.currUser = game.userList[0];
+        game.currUser = game.userList[1];
         game.createStage();
+        game.start();
         // let sky:egret.Bitmap = this.createBitmapByName("bg_jpg");
         // this.addChild(sky);
         // let stageW:number = this.stage.stageWidth;

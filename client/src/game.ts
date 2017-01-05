@@ -7,8 +7,23 @@ namespace Client {
         cupList: Cup[];
         hubList: Hub[];
         hand: Hand;
+        tip: Tip;
+
+        public get roller(): User {
+            return _.find(this.userList, us => us.role == Role.roller);
+        }
+
+        public get guesser(): User {
+            return _.find(this.userList, us => us.role == Role.guesser);
+        }
+
+        public get currHub(): Hub {
+            return _.find(this.hubList, hu => hu.user == this.currUser);
+        }
 
         private halo: egret.Bitmap;
+        private currCup: Cup;
+        private currCupPosi: { x: number, y: number };
 
         private stage: egret.Stage;
         private sh: egret.SpriteSheet;
@@ -32,14 +47,75 @@ namespace Client {
             this.createCups();
 
             // mock
-            this.mockPutMouse();
+            // this.mockPutMouse();
 
             this.createHubs();
             // mock
-            this.mockScore();
-            this.mockHubRuntimer();
+            // this.mockScore();
+            // this.mockHubRuntimer();
 
             this.createHand();
+
+            this.createTip();
+
+
+        }
+
+        start() {
+            if (this.currUser.role == Role.roller) {
+                this.startPutMouseTimer();
+            }
+        }
+
+
+
+        private startPutMouseTimer() {
+            this.roller.status = UserStatus.beforePutMouse;
+            // show tips
+
+            this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => {
+
+                this.cupList.forEach(cu => {
+                    let sp = cu.cupSp;
+                    sp.touchEnabled = true;
+                    sp.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
+                        if (this.currUser != this.roller || UserStatus.beforePutMouse != this.roller.status) {
+                            return;
+                        }
+                        this.putMouse(cu);
+                        this.currHub.clearTimer();
+                    }, this);
+                });
+                this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
+                    if (UserStatus.beforePutMouse == this.roller.status) {
+
+                        let cu = this.cupList[0];
+                        this.putMouse(cu);
+                    }
+                });
+            });
+        }
+
+        private putMouse(cup: Cup) {
+            // ani
+            let height = 300
+            let mouseImg = new egret.Bitmap(this.sh.getTexture('mouse_png'));
+            let posi = {
+                x:cup.cupSp.x+cup.cupSp.width/2-mouseImg.width/2,
+                y:cup.cupSp.y+cup.cupSp.height/2-mouseImg.height/2 -height
+            };
+            mouseImg.x = posi.x;
+            mouseImg.y = posi.y;
+            mouseImg.alpha = 1;
+            this.stage.addChild(mouseImg);
+            egret.Tween.get(mouseImg)
+            .to({y:posi.y+height,alpha:.3},800).call(()=>{
+                this.stage.removeChild(mouseImg);
+                cup.putMouse();
+                cup.showMouse();
+                this.roller.status = UserStatus.rolling;
+            });
+
 
         }
 
@@ -70,6 +146,18 @@ namespace Client {
             bg.x = this.stage.stageWidth / 2 - bg.width / 2;
 
             this.stage.addChild(bg);
+        }
+
+        private createTip() {
+            let tip = this.tip = new Tip();
+
+            let widthRate = .6;
+            let tx = tip.tx;
+            tx.width = this.stage.width * widthRate;
+            tx.x = this.stage.width * (1 - widthRate) / 2;
+            tx.y = this.stage.height / 2 - 200;
+
+            this.stage.addChild(tx);
         }
 
 
@@ -132,8 +220,12 @@ namespace Client {
             this.stage.addChild(hand.sp);
 
 
-
-            this.stage.addEventListener(egret.TouchEvent.TOUCH_END, (e: egret.TouchEvent) => {
+            // 点击某个杯子,显示出HALO
+            // 开始roll
+            this.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
+                if (this.roller.status != UserStatus.rolling) {
+                    return;
+                }
                 let x = e.stageX;
                 let y = e.stageY;
 
@@ -152,8 +244,81 @@ namespace Client {
                         hand.sp.x = cux + cu.cupSp.width / 2;
                         hand.sp.y = cuy + cu.cupSp.height / 2;
                     }
+
+                    this.currCup = cu;
+                    this.currCupPosi = { x: cux, y: cuy };
+                    this.roller.status = UserStatus.rolling;
                 });
             }, this);
+
+            // 点击某个cup,进入ROLLING状态
+            this.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, (e: egret.TouchEvent) => {
+                if (this.roller.status != UserStatus.rolling) {
+                    return;
+                }
+
+                let cupSp = this.currCup.cupSp;
+                cupSp.x = e.stageX;
+                hand.sp.x = cupSp.x + cupSp.width / 2;
+                hand.sp.y = cupSp.y + cupSp.height / 2;
+
+                _.find(this.cupList, cu => {
+                    if (cu == this.currCup) {
+                        return false;
+                    }
+
+                    let rect: egret.Rectangle = new egret.Rectangle(cu.cupSp.x, cu.cupSp.y, cu.cupSp.width, cu.cupSp.height);
+                    let point: egret.Point = new egret.Point(e.stageX, e.stageY);
+                    if (e.stageX >= cu.cupSp.x && e.stageX <= cu.cupSp.x + cu.cupSp.width) {
+                        this.swapCup(cu);
+                        return true;
+                    }
+                });
+
+
+            }, this);
+
+            // roll结束
+            this.stage.addEventListener(egret.TouchEvent.TOUCH_END, (e: egret.TouchEvent) => {
+                if (this.roller.status != UserStatus.rolling) {
+                    return;
+                }
+
+                // this.endRoll();
+            }, this);
+
+        }
+
+        private startRollTimer() {
+            this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
+                this.endRoll();
+            });
+        }
+
+        private endRoll() {
+            this.currCup.cupSp.x = this.currCupPosi.x;
+            this.currCup.cupSp.y = this.currCupPosi.y;
+
+            this.roller.status = UserStatus.afterRoll;
+        }
+
+        private swapCup(cup: Cup) {
+            egret.Tween.get(cup.cupSp).to({ alpha: 0 }, .5, egret.Ease.bounceInOut)
+                .call(() => {
+                    let lastCupPosi = { x: cup.cupSp.x, y: cup.cupSp.y };
+                    cup.cupSp.x = this.currCupPosi.x;
+                    cup.cupSp.y = this.currCupPosi.y;
+                    this.currCupPosi = lastCupPosi;
+                    console.log(this.currCupPosi);
+                })
+                .to({ alpha: 1 }, .5, egret.Ease.bounceIn);
+        }
+
+        private isInRect(rect: egret.Rectangle, point: egret.Point): boolean {
+            return point.x >= rect.x &&
+                point.x <= rect.x + rect.width &&
+                point.y >= rect.y &&
+                point.y <= rect.y + rect.width;
 
         }
 

@@ -129,5 +129,11 @@ namespace Client {
             ti.start();
 
         }
+
+        clearTimer() {
+            let ti = this.ti;
+            ti.removeEventListener(egret.TimerEvent.TIMER, this.timerListener, this);
+            this.timer.text = '0';
+        }
     }
 }
