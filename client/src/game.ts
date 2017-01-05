@@ -75,24 +75,24 @@ namespace Client {
 
             this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => {
 
-                this.cupList.forEach(cu => {
-                    let sp = cu.cupSp;
-                    sp.touchEnabled = true;
-                    sp.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
-                        if (this.currUser != this.roller || UserStatus.beforePutMouse != this.roller.status) {
-                            return;
-                        }
-                        this.putMouse(cu);
-                        this.currHub.clearTimer();
-                    }, this);
-                });
-                this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
-                    if (UserStatus.beforePutMouse == this.roller.status) {
-
-                        let cu = this.cupList[0];
-                        this.putMouse(cu);
+            });
+            this.cupList.forEach(cu => {
+                let sp = cu.cupSp;
+                sp.touchEnabled = true;
+                sp.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
+                    if (this.currUser != this.roller || UserStatus.beforePutMouse != this.roller.status) {
+                        return;
                     }
-                });
+                    this.putMouse(cu);
+                    this.currHub.clearTimer();
+                }, this);
+            });
+            this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
+                if (UserStatus.beforePutMouse == this.roller.status) {
+
+                    let cu = this.cupList[0];
+                    this.putMouse(cu);
+                }
             });
         }
 
