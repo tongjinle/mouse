@@ -18,14 +18,16 @@ namespace Client {
             this._status = v;
 
             let dict: { [stat: number]: () => void } = {};
-
+            // ********************************************************************************************************************************************
+            // beforePutMouse
+            // ********************************************************************************************************************************************
             dict[GameStatus.beforePutMouse] = () => {
                 this.roller.status = UserStatus.beforePutMouse;
                 this.guesser.status = UserStatus.beforeWatching;
 
                 if (this.currUser.role == Role.roller) {
                     // show tips
-                    this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => {});
+                    this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
                     this.cupList.forEach(cu => {
                         let sp = cu.cupSp;
                         sp.touchEnabled = true;
@@ -48,6 +50,145 @@ namespace Client {
                     });
                 }
             };
+
+            // ********************************************************************************************************************************************
+            // beforeRolling
+            // ********************************************************************************************************************************************
+            dict[GameStatus.beforeRolling] = ()=>{
+                this.status = GameStatus.rolling;
+            };
+
+            // ********************************************************************************************************************************************
+            // rolling
+            // ********************************************************************************************************************************************
+            dict[GameStatus.rolling] = () => {
+                this.roller.status = UserStatus.beforeRolling;
+                this.guesser.status = UserStatus.watching;
+
+                let hand = this.hand;
+                // 松开手
+                let endRoll = () => {
+                    if (!this.currCup) {
+                        return;
+                    }
+                    this.currCup.cupSp.x = this.currCupPosi.x;
+                    this.currCup.cupSp.y = this.currCupPosi.y;
+
+                    this.hand.toggle(false);
+                    this.roller.status = UserStatus.beforeRolling;
+                };
+                // 交换杯子
+                let swapCup = (cup: Cup) => {
+                    egret.Tween.get(cup.cupSp).to({ alpha: 0 }, .5, egret.Ease.bounceInOut)
+                        .call(() => {
+                            let lastCupPosi = { x: cup.cupSp.x, y: cup.cupSp.y };
+                            cup.cupSp.x = this.currCupPosi.x;
+                            cup.cupSp.y = this.currCupPosi.y;
+                            this.currCupPosi = lastCupPosi;
+                            console.log(this.currCupPosi);
+                        })
+                        .to({ alpha: 1 }, .5, egret.Ease.bounceIn);
+                };
+                // 提示
+                if(this.currUser = this.roller){
+                    this.tip.showMsg(CONFIG.ROLL_TIP,CONFIG.ROLL_TIP_DURATION,()=>{});
+                }
+                // 点击某个杯子,显示出HALO
+                // 开始roll
+                this.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
+                    if (this.currUser != this.roller) {
+                        return;
+                    }
+
+                    if (this.roller.status != UserStatus.beforeRolling) {
+                        return;
+                    }
+
+                    let x = e.stageX;
+                    let y = e.stageY;
+
+                    hand.toggle(false);
+                    // 探测hand是否碰到了cup
+                    _.find(this.cupList, (cu) => {
+                        let cux = cu.cupSp.x;
+                        let cuy = cu.cupSp.y;
+                        let cux2 = cux + cu.cupSp.width;
+                        let cuy2 = cuy + cu.cupSp.height;
+
+
+
+                        if (cux <= x && x <= cux2 && cuy <= y && y <= cuy2 && cu.hasMouse) {
+                            hand.toggle(true);
+                            hand.sp.x = cux + cu.cupSp.width / 2;
+                            hand.sp.y = cuy + cu.cupSp.height / 2;
+
+                            this.currCup = cu;
+                            this.currCupPosi = { x: cux, y: cuy };
+                            this.roller.status = UserStatus.rolling;
+                        }
+                    });
+                }, this);
+
+                // 点击某个cup,进入ROLLING状态
+                this.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, (e: egret.TouchEvent) => {
+                    if (this.currUser != this.roller) {
+                        return;
+                    }
+
+                    if (this.roller.status != UserStatus.rolling) {
+                        return;
+                    }
+
+                    // this.currCup = _.find(this.cupList,cu=>cu.hasMouse);
+
+                    let cupSp = this.currCup.cupSp;
+                    cupSp.x = e.stageX;
+                    hand.sp.x = cupSp.x + cupSp.width / 2;
+                    hand.sp.y = cupSp.y + cupSp.height / 2;
+
+                    _.find(this.cupList, cu => {
+                        if (cu == this.currCup) {
+                            return false;
+                        }
+
+                        let rect: egret.Rectangle = new egret.Rectangle(cu.cupSp.x, cu.cupSp.y, cu.cupSp.width, cu.cupSp.height);
+                        let point: egret.Point = new egret.Point(e.stageX, e.stageY);
+                        if (e.stageX >= cu.cupSp.x && e.stageX <= cu.cupSp.x + cu.cupSp.width) {
+                            swapCup(cu);
+                            return true;
+                        }
+                    });
+
+
+                }, this);
+
+                // roll结束
+                this.stage.addEventListener(egret.TouchEvent.TOUCH_END, (e: egret.TouchEvent) => {
+                    if (this.roller.status != UserStatus.rolling) {
+                        return;
+                    }
+
+                    endRoll();
+                }, this);
+
+                this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
+                    endRoll();
+                    this.hand.toggle(false);
+                    this.status = GameStatus.afterRolling;
+                });
+            };
+
+
+            // ********************************************************************************************************************************************
+            // afterRolling
+            // ********************************************************************************************************************************************
+            dict[GameStatus.afterRolling]=()=>{
+                    this.roller.status = UserStatus.afterRolling;
+
+                    this.guesser.status = UserStatus.afterWatching;
+
+            };
+
 
             dict[v]();
         }
@@ -111,9 +252,6 @@ namespace Client {
 
 
 
-        private startPutMouseTimer() {
-
-        }
 
         private putMouse(cup: Cup) {
             // ani
@@ -133,10 +271,6 @@ namespace Client {
                     this.stage.removeChild(mouseImg);
                     cup.putMouse();
                     cup.showMouse();
-                    this.roller.status = UserStatus.beforeRolling;
-
-
-                    this.startRollTimer();
                 });
 
 
@@ -244,124 +378,6 @@ namespace Client {
             this.stage.addChild(hand.sp);
 
 
-            // 点击某个杯子,显示出HALO
-            // 开始roll
-            this.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
-                if (this.currUser != this.roller) {
-                    return;
-                }
-
-                if (this.roller.status != UserStatus.beforeRolling) {
-                    return;
-                }
-
-                let x = e.stageX;
-                let y = e.stageY;
-
-                hand.toggle(false);
-                // 探测hand是否碰到了cup
-                _.find(this.cupList, (cu) => {
-                    let cux = cu.cupSp.x;
-                    let cuy = cu.cupSp.y;
-                    let cux2 = cux + cu.cupSp.width;
-                    let cuy2 = cuy + cu.cupSp.height;
-
-
-
-                    if (cux <= x && x <= cux2 && cuy <= y && y <= cuy2 && cu.hasMouse) {
-                        hand.toggle(true);
-                        hand.sp.x = cux + cu.cupSp.width / 2;
-                        hand.sp.y = cuy + cu.cupSp.height / 2;
-
-                        this.currCup = cu;
-                        this.currCupPosi = { x: cux, y: cuy };
-                        this.roller.status = UserStatus.rolling;
-                    }
-                });
-            }, this);
-
-            // 点击某个cup,进入ROLLING状态
-            this.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, (e: egret.TouchEvent) => {
-                if (this.currUser != this.roller) {
-                    return;
-                }
-
-                if (this.roller.status != UserStatus.rolling) {
-                    return;
-                }
-
-                // this.currCup = _.find(this.cupList,cu=>cu.hasMouse);
-
-                let cupSp = this.currCup.cupSp;
-                cupSp.x = e.stageX;
-                hand.sp.x = cupSp.x + cupSp.width / 2;
-                hand.sp.y = cupSp.y + cupSp.height / 2;
-
-                _.find(this.cupList, cu => {
-                    if (cu == this.currCup) {
-                        return false;
-                    }
-
-                    let rect: egret.Rectangle = new egret.Rectangle(cu.cupSp.x, cu.cupSp.y, cu.cupSp.width, cu.cupSp.height);
-                    let point: egret.Point = new egret.Point(e.stageX, e.stageY);
-                    if (e.stageX >= cu.cupSp.x && e.stageX <= cu.cupSp.x + cu.cupSp.width) {
-                        this.swapCup(cu);
-                        return true;
-                    }
-                });
-
-
-            }, this);
-
-            // roll结束
-            this.stage.addEventListener(egret.TouchEvent.TOUCH_END, (e: egret.TouchEvent) => {
-                if (this.roller.status != UserStatus.rolling) {
-                    return;
-                }
-
-                this.endRoll();
-            }, this);
-
-        }
-
-        private startRollTimer() {
-            this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
-                this.endRoll();
-                this.hand.toggle(false);
-                this.roller.status = UserStatus.afterRoll;
-
-                this.guesser.status = UserStatus.afterWatching;
-            });
-        }
-
-        private endRoll() {
-            if (!this.currCup) {
-                return;
-            }
-            this.currCup.cupSp.x = this.currCupPosi.x;
-            this.currCup.cupSp.y = this.currCupPosi.y;
-
-            this.hand.toggle(false);
-            this.roller.status = UserStatus.beforeRolling;
-        }
-
-        private swapCup(cup: Cup) {
-            egret.Tween.get(cup.cupSp).to({ alpha: 0 }, .5, egret.Ease.bounceInOut)
-                .call(() => {
-                    let lastCupPosi = { x: cup.cupSp.x, y: cup.cupSp.y };
-                    cup.cupSp.x = this.currCupPosi.x;
-                    cup.cupSp.y = this.currCupPosi.y;
-                    this.currCupPosi = lastCupPosi;
-                    console.log(this.currCupPosi);
-                })
-                .to({ alpha: 1 }, .5, egret.Ease.bounceIn);
-        }
-
-        private isInRect(rect: egret.Rectangle, point: egret.Point): boolean {
-            return point.x >= rect.x &&
-                point.x <= rect.x + rect.width &&
-                point.y >= rect.y &&
-                point.y <= rect.y + rect.width;
 
         }
 
