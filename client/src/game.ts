@@ -45,6 +45,7 @@ namespace Client {
                         if (UserStatus.beforePutMouse == this.roller.status) {
                             let cu = this.cupList[Math.floor(Math.random() * this.cupList.length)];
                             this.putMouse(cu);
+                            // this.currHub.clearTimer();
                             this.status = GameStatus.beforeRolling;
                         }
                     });
@@ -54,7 +55,7 @@ namespace Client {
             // ********************************************************************************************************************************************
             // beforeRolling
             // ********************************************************************************************************************************************
-            dict[GameStatus.beforeRolling] = ()=>{
+            dict[GameStatus.beforeRolling] = () => {
                 this.status = GameStatus.rolling;
             };
 
@@ -90,8 +91,8 @@ namespace Client {
                         .to({ alpha: 1 }, .5, egret.Ease.bounceIn);
                 };
                 // 提示
-                if(this.currUser = this.roller){
-                    this.tip.showMsg(CONFIG.ROLL_TIP,CONFIG.ROLL_TIP_DURATION,()=>{});
+                if (this.currUser = this.roller) {
+                    this.tip.showMsg(CONFIG.ROLL_TIP, CONFIG.ROLL_TIP_DURATION, () => { });
                 }
                 // 点击某个杯子,显示出HALO
                 // 开始roll
@@ -182,10 +183,29 @@ namespace Client {
             // ********************************************************************************************************************************************
             // afterRolling
             // ********************************************************************************************************************************************
-            dict[GameStatus.afterRolling]=()=>{
-                    this.roller.status = UserStatus.afterRolling;
+            dict[GameStatus.afterRolling] = () => {
+                this.roller.status = UserStatus.afterRolling;
+                this.guesser.status = UserStatus.afterWatching;
 
-                    this.guesser.status = UserStatus.afterWatching;
+                let guess = (cup:Cup)=>{};
+
+                // todo 对话
+                if(this.currUser == this.guesser){
+                    this.cupList.forEach(cu=>{
+                        cu.cupSp.addEventListener(egret.TouchEvent.TOUCH_BEGIN,()=>{
+                            if(this.guesser.status!=UserStatus.afterWatching){
+                                return;
+                            }
+
+                            this.hand.toggle(true);
+                            this.hand.sp .x = cu.cupSp.x+cu.cupSp.width/2 - this.hand.sp.width/2;
+                            this.hand.sp.y = cu.cupSp.y+cu.cupSp.height/2 -this.hand.sp.height/2;
+
+                            guess(cu);
+
+                        },this);
+                    });
+                }
 
             };
 
@@ -394,16 +414,7 @@ namespace Client {
             });
         }
 
-        guess(cup: Cup) {
-            if (this.currUser != this.guesser) {
-                return;
-            }
-
-            if (this.guesser.status != UserStatus.afterWatching) {
-
-            }
-        }
-
+       
 
 
     }
