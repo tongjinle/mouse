@@ -9,19 +9,44 @@ namespace Client {
         hand: Hand;
         tip: Tip;
 
-
-        private _status : GameStatus;
-        public get status() : GameStatus {
+        // 游戏状态机
+        private _status: GameStatus;
+        public get status(): GameStatus {
             return this._status;
         }
-        public set status(v : GameStatus) {
+        public set status(v: GameStatus) {
             this._status = v;
 
-            let  dict:{[stat:number]:()=>void} ={};
-            dict[GameStatus.beforePutMouse] = ()=>{
+            let dict: { [stat: number]: () => void } = {};
+
+            dict[GameStatus.beforePutMouse] = () => {
+                this.roller.status = UserStatus.beforePutMouse;
+                this.guesser.status = UserStatus.beforeWatching;
+
                 if (this.currUser.role == Role.roller) {
-                this.startPutMouseTimer();
-            }
+                    // show tips
+                    this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => {});
+                    this.cupList.forEach(cu => {
+                        let sp = cu.cupSp;
+                        sp.touchEnabled = true;
+                        sp.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
+                            if (this.currUser != this.roller || UserStatus.beforePutMouse != this.roller.status) {
+                                return;
+                            }
+                            this.putMouse(cu);
+                            this.currHub.clearTimer();
+                            this.status = GameStatus.beforeRolling;
+                        }, this);
+                    });
+                    // 超时没有放置mouse,就会随机在一个cup中放置mouse
+                    this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
+                        if (UserStatus.beforePutMouse == this.roller.status) {
+                            let cu = this.cupList[Math.floor(Math.random() * this.cupList.length)];
+                            this.putMouse(cu);
+                            this.status = GameStatus.beforeRolling;
+                        }
+                    });
+                }
             };
 
             dict[v]();
@@ -87,32 +112,7 @@ namespace Client {
 
 
         private startPutMouseTimer() {
-            this.roller.status = UserStatus.beforePutMouse;
-            this.guesser.status = UserStatus.watching;
 
-            // show tips
-
-            this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => {
-
-            });
-            this.cupList.forEach(cu => {
-                let sp = cu.cupSp;
-                sp.touchEnabled = true;
-                sp.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
-                    if (this.currUser != this.roller || UserStatus.beforePutMouse != this.roller.status) {
-                        return;
-                    }
-                    this.putMouse(cu);
-                    this.currHub.clearTimer();
-                }, this);
-            });
-            this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
-                if (UserStatus.beforePutMouse == this.roller.status) {
-
-                    let cu = this.cupList[Math.floor(Math.random() * this.cupList.length)];
-                    this.putMouse(cu);
-                }
-            });
         }
 
         private putMouse(cup: Cup) {
@@ -330,7 +330,7 @@ namespace Client {
                 this.hand.toggle(false);
                 this.roller.status = UserStatus.afterRoll;
 
-                this.guesser.status = UserStatus.afterWatching; 
+                this.guesser.status = UserStatus.afterWatching;
             });
         }
 
