@@ -28,10 +28,10 @@ namespace Client {
             let index = 1;
             let sh: egret.SpriteSheet;
 
-            let ti = this.faceAniTimer = new egret.Timer(300, 0);
+            let ti = this.faceAniTimer = this.faceAniTimer || new egret.Timer(300, 0);
             ti.addEventListener(egret.TimerEvent.TIMER, () => {
-                this.frontFace.texture = sh.getTexture(`0${index+1}_png`);
-                index = (index+1)%count
+                this.frontFace.texture = sh.getTexture(`0${index + 1}_png`);
+                index = (index + 1) % count
             }, this);
 
             if (this.animal == Animal.cat) {
@@ -43,6 +43,8 @@ namespace Client {
             if (v == UserStatus.watching) {
                 ti.reset();
                 ti.start();
+            } else if (v == UserStatus.afterWatching) {
+                ti.reset();
             }
 
         }
