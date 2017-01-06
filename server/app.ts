@@ -29,11 +29,24 @@ class App {
 		this.gameList = [];
 		this.dict = {};
 
-		let app = Http.createClient();
+		let app = Http.createServer();
 		let io = SocketIO(app);
 
 
-		app.listen(3000);
+		app.listen(3000, () => {
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log('..............');
+			console.log(new Date().toLocaleString());
+		});
 		this.bind(io);
 	}
 
@@ -42,10 +55,12 @@ class App {
 	}
 
 	private leaveRoom(sid: string) {
+
 		delete this.dict[sid];
 	}
 
 	private getRoom(sid: string): EnterRoomData {
+
 		return this.dict[sid];
 	}
 
@@ -73,7 +88,7 @@ class App {
 			// 进入房间
 			so.on(RequestType.enterRoom, (data: EnterRoomData) => {
 				let sid = so.id;
-				let gameId  = data.gameId;
+				let gameId = data.gameId;
 				// 记录sid对应的信息
 				this.joinRoom(sid, data);
 				so.join(data.gameId);
@@ -145,16 +160,20 @@ class App {
 				}
 			});
 
-			so.on('disconnection', () => {
-				this.leaveRoom(so.id);
+			so.on('disconnect', () => {
 
 				let room = this.getRoom(so.id);
-				let gameId = room.gameId;
-				let userId = room.userId;
-				
-				io.to(gameId).emit(PushType.onleaveRoom,{
-					userId
-				});
+
+				this.leaveRoom(so.id);
+				if (room) {
+
+					let gameId = room.gameId;
+					let userId = room.userId;
+
+					io.to(gameId).emit(PushType.onleaveRoom, {
+						userId
+					});
+				}
 			});
 
 		});
