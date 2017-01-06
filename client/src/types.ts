@@ -9,13 +9,24 @@ namespace Client {
         roller
     }
 
+    export enum GameStatus{
+        beforePutMouse,
+        beforeRolling,
+        rolling,
+        afterRolling,
+        afterGuess,
+        roundEnd,
+        gameEnd
+
+    }
+
 
     export enum UserStatus{
         // roller
         beforePutMouse,
         beforeRolling,
         rolling,
-        afterRoll,
+        afterRolling,
         
         // guesser
         beforeWatching,

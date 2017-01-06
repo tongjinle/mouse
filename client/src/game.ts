@@ -9,6 +9,25 @@ namespace Client {
         hand: Hand;
         tip: Tip;
 
+
+        private _status : GameStatus;
+        public get status() : GameStatus {
+            return this._status;
+        }
+        public set status(v : GameStatus) {
+            this._status = v;
+
+            let  dict:{[stat:number]:()=>void} ={};
+            dict[GameStatus.beforePutMouse] = ()=>{
+                if (this.currUser.role == Role.roller) {
+                this.startPutMouseTimer();
+            }
+            };
+
+            dict[v]();
+        }
+
+
         public get roller(): User {
             return _.find(this.userList, us => us.role == Role.roller);
         }
@@ -62,9 +81,7 @@ namespace Client {
         }
 
         start() {
-            if (this.currUser.role == Role.roller) {
-                this.startPutMouseTimer();
-            }
+            this.status = GameStatus.beforePutMouse;
         }
 
 
