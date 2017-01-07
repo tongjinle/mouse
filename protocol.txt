@@ -14,8 +14,8 @@
 		push:
 		route:'onenterRoom'
 		{
-			gameId:number,
-			userId:number,
+			gameId:string,
+			userId:string,
 			username:string,
 			ext:{
 				logoUrl:string
@@ -31,7 +31,7 @@
 		push:
 		route:'onleaveRoom'
 		{
-			userId:number
+			userId:string
 		}
 
 	3.游戏开始(push)

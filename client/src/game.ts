@@ -1,7 +1,10 @@
 /// <reference path="../libs/underscore/underscore.d.ts" />
+/// <reference path="../libs/socketio/socket.io.d.ts" />
 
 namespace Client {
     export class Game {
+        so: SocketIOClient.Socket;
+
         currUser: User;
         userList: User[];
         cupList: Cup[];
@@ -187,23 +190,23 @@ namespace Client {
                 this.roller.status = UserStatus.afterRolling;
                 this.guesser.status = UserStatus.afterWatching;
 
-                let guess = (cup:Cup)=>{};
+                let guess = (cup: Cup) => { };
 
                 // todo 对话
-                if(this.currUser == this.guesser){
-                    this.cupList.forEach(cu=>{
-                        cu.cupSp.addEventListener(egret.TouchEvent.TOUCH_BEGIN,()=>{
-                            if(this.guesser.status!=UserStatus.afterWatching){
+                if (this.currUser == this.guesser) {
+                    this.cupList.forEach(cu => {
+                        cu.cupSp.addEventListener(egret.TouchEvent.TOUCH_BEGIN, () => {
+                            if (this.guesser.status != UserStatus.afterWatching) {
                                 return;
                             }
 
                             this.hand.toggle(true);
-                            this.hand.sp .x = cu.cupSp.x+cu.cupSp.width/2 - this.hand.sp.width/2;
-                            this.hand.sp.y = cu.cupSp.y+cu.cupSp.height/2 -this.hand.sp.height/2;
+                            this.hand.sp.x = cu.cupSp.x + cu.cupSp.width / 2 - this.hand.sp.width / 2;
+                            this.hand.sp.y = cu.cupSp.y + cu.cupSp.height / 2 - this.hand.sp.height / 2;
 
                             guess(cu);
 
-                        },this);
+                        }, this);
                     });
                 }
 
@@ -240,11 +243,47 @@ namespace Client {
             this.cupList = [];
             this.hubList = [];
 
+            this.createBg();
+            this.createSocket();
+        }
+
+        createSocket() {
+            let so = this.so = io(CONFIG.SOCKET_URI);
+            so.on('onenterRoom', (data: userParam) => {
+                console.log('onenterRoom', data);
+                let us: User = new User(data.userId, data.username);
+                this.userList.push(us);
+            });
+
+            so.on('onleaveRoom', (data: { userId: string }) => {
+                console.log('onleaveRoom', data);
+                _.find(this.userList, (us, i) => {
+                    if (us.userId == data.userId) {
+                        this.userList.splice(i,1);
+                        return true;
+                    }
+                });
+            });
+
+            so.on('ongameStart', (userList) => {
+
+            });
+        }
+
+
+        addCurrUser(param: userParam) {
+            this.so.emit('enterRoom', param);
+        }
+
+        addUser(user: User) {
 
         }
 
-        createStage() {
-            this.createBg();
+        removeUser(username: string) {
+
+        }
+
+        start() {
             for (let user of this.userList) {
                 this.createUser(user);
 
@@ -263,10 +302,6 @@ namespace Client {
 
             this.createTip();
 
-
-        }
-
-        start() {
             this.status = GameStatus.beforePutMouse;
         }
 

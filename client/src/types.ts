@@ -1,4 +1,13 @@
 namespace Client {
+    export interface userParam {
+        gameId: string,
+        userId: string,
+        username: string,
+        ext: {
+            logoUrl: string
+        }
+    }
+
     export enum Animal {
         cat,
         dog
@@ -27,7 +36,7 @@ namespace Client {
         beforeRolling,
         rolling,
         afterRolling,
-        
+
         // guesser
         beforeWatching,
         watching,
@@ -36,7 +45,7 @@ namespace Client {
     }
 
 
-    export enum HubPosition{
+    export enum HubPosition {
         top,
         bottom
     }
