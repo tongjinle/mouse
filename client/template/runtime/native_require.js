@@ -17,8 +17,10 @@ var game_file_list = [
 	"bin-debug/game.js",
 	"bin-debug/hand.js",
 	"bin-debug/hub.js",
+	"bin-debug/pre.js",
 	"bin-debug/tip.js",
 	"bin-debug/types.js",
+	"bin-debug/urlParser.js",
 	"bin-debug/user.js",
 	//----auto game_file_list end----
 ];

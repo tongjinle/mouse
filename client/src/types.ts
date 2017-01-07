@@ -1,11 +1,18 @@
 namespace Client {
-    export interface userParam {
+    export interface UserParam {
         gameId: string,
         userId: string,
         username: string,
         ext: {
             logoUrl: string
         }
+    }
+    export interface UserData {
+        id: string;
+        name: string;
+        logoUrl: string;
+        animal: Animal;
+        role: Role;
     }
 
     export enum Animal {
@@ -18,7 +25,12 @@ namespace Client {
         roller
     }
 
-    export enum GameStatus{
+    export enum PreStatus {
+        prepare,
+        ready
+    }
+
+    export enum GameStatus {
         beforePutMouse,
         beforeRolling,
         rolling,
@@ -30,7 +42,7 @@ namespace Client {
     }
 
 
-    export enum UserStatus{
+    export enum UserStatus {
         // roller
         beforePutMouse,
         beforeRolling,

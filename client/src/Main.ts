@@ -26,17 +26,19 @@
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //////////////////////////////////////////////////////////////////////////////////////
+/// <reference path="../libs/socketio/socket.io.d.ts" />
 
 class Main extends egret.DisplayObjectContainer {
 
+    private userList: Client.User[];
     /**
      * 加载进度界面
      * Process interface loading
      */
     private loadingView: LoadingUI;
-
     public constructor() {
         super();
+        this.userList = [];
         this.addEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
     }
 
@@ -45,6 +47,8 @@ class Main extends egret.DisplayObjectContainer {
         //Config to load process interface
         this.loadingView = new LoadingUI();
         this.stage.addChild(this.loadingView);
+        this.bind();
+
 
         //初始化Resource资源加载库
         //initiate Resource loading library
@@ -76,7 +80,9 @@ class Main extends egret.DisplayObjectContainer {
             RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, this.onResourceLoadError, this);
             RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, this.onResourceProgress, this);
             RES.removeEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, this.onItemLoadError, this);
-            this.createGameScene();
+
+            this.createSocket();
+            this.createPreScene();
         }
     }
 
@@ -112,11 +118,6 @@ class Main extends egret.DisplayObjectContainer {
 
 
 
-
-    private textfield: egret.TextField;
-
-
-
     private mockUserList(): Client.User[] {
         let userList: Client.User[] = [];
         let u: Client.User;
@@ -132,6 +133,19 @@ class Main extends egret.DisplayObjectContainer {
         return userList;
     }
 
+    private pre: Client.Pre;
+    private createPreScene(): void {
+        let pre = this.pre = new Client.Pre(this.stage);
+
+        let currUser = this.getCurrUser();
+        if (!currUser) {
+            throw "invaild UserParam";
+        }
+
+        this.so.emit('enterRoom', currUser);
+    }
+
+
     private game: Client.Game;
 
     /**
@@ -143,33 +157,66 @@ class Main extends egret.DisplayObjectContainer {
         let game = this.game = new Client.Game(this.stage);
         game.userList = userList;
         game.currUser = game.userList[1];
-        game.createStage();
         game.start();
         let usp = this.getCurrUser();
-        game.addCurrUser(usp);
+
     }
 
     // url格式:
     // ?username=1&userId=100&gameId=100&ext_logoUrl=http://abc.com
-    private getCurrUser(): Client.userParam {
-        let us: Client.userParam;
-        let params = {};
+    private getCurrUser(): Client.UserParam {
         let search = location['search'] as string;
-        search.slice(1).split('&').forEach(str => {
-            let arr = str.split('=');
-            let key = arr[0] as string;
-            let value = arr[1] as string;
-            if (/^ext_/.test(key)) {
-                let ext = params['ext'] = params['ext'] || {};
-                ext[key.replace(/^ext_/, '')] = value;
-            } else {
-                params[arr[0]] = arr[1];
+        return Client.UrlParser.parseSearch(search);
+    }
 
-            }
+    private so: SocketIOClient.Socket;
+    private createSocket() {
+        let so = this.so = io(Client.CONFIG.SOCKET_URI);
+        so.on('onenterRoom', (data: Client.UserParam) => {
+            console.log('onenterRoom', data);
+
+
         });
-        // console.log(params);
-        us = params as Client.userParam;
-        return us;
+
+        so.on('onleaveRoom', (data: { userId: string }) => {
+            console.log('onleaveRoom', data);
+            _.find(this.userList, (us, i) => {
+                if (us.userId == data.userId) {
+                    this.userList.splice(i, 1);
+                    return true;
+                }
+            });
+
+            this.checkPreStatus();
+        });
+
+        so.on('ongameStart', (data: { userList: Client.UserData[] }) => {
+            this.userList = data.userList.map(us => {
+                let {id, name, animal, role, logoUrl} = us;
+                let user = new Client.User(id, name, animal);
+                user.logoUrl = logoUrl;
+                return user;
+            });
+
+            this.checkPreStatus();
+        });
+    }
+
+    private checkPreStatus() {
+        this.pre.status = this.userList.length == 2
+            ? Client.PreStatus.ready
+            : Client.PreStatus.prepare
+            ;
+    }
+
+
+    private bind() {
+        this.stage.addEventListener('gameStart', () => {
+            console.log('gamestart in main');
+
+            this.pre.scene.visible = false;
+            this.createGameScene();
+        }, null);
     }
 }
 

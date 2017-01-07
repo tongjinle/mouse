@@ -1,10 +1,8 @@
 /// <reference path="../libs/underscore/underscore.d.ts" />
-/// <reference path="../libs/socketio/socket.io.d.ts" />
 
 namespace Client {
     export class Game {
-        so: SocketIOClient.Socket;
-
+       
         currUser: User;
         userList: User[];
         cupList: Cup[];
@@ -243,47 +241,12 @@ namespace Client {
             this.cupList = [];
             this.hubList = [];
 
-            this.createBg();
+            this.createScene();
             this.createSocket();
         }
 
-        createSocket() {
-            let so = this.so = io(CONFIG.SOCKET_URI);
-            so.on('onenterRoom', (data: userParam) => {
-                console.log('onenterRoom', data);
-                let us: User = new User(data.userId, data.username);
-                this.userList.push(us);
-            });
-
-            so.on('onleaveRoom', (data: { userId: string }) => {
-                console.log('onleaveRoom', data);
-                _.find(this.userList, (us, i) => {
-                    if (us.userId == data.userId) {
-                        this.userList.splice(i,1);
-                        return true;
-                    }
-                });
-            });
-
-            so.on('ongameStart', (userList) => {
-
-            });
-        }
-
-
-        addCurrUser(param: userParam) {
-            this.so.emit('enterRoom', param);
-        }
-
-        addUser(user: User) {
-
-        }
-
-        removeUser(username: string) {
-
-        }
-
-        start() {
+        createScene() {
+            this.createBg();
             for (let user of this.userList) {
                 this.createUser(user);
 
@@ -301,13 +264,21 @@ namespace Client {
             this.createHand();
 
             this.createTip();
+        }
 
+        createSocket() {
+            
+        }
+
+
+       
+        start() {
             this.status = GameStatus.beforePutMouse;
         }
 
 
 
-
+        // 放置老鼠
         private putMouse(cup: Cup) {
             // ani
             let height = 300
@@ -331,6 +302,19 @@ namespace Client {
 
         }
 
+         // isWin是站在guess的角度
+        addScore(isWin: boolean) {
+            this.hubList.forEach(hu => {
+                if (Role.guesser == hu.user.role) {
+                    hu.user.scoreList.push(isWin);
+                    hu.addScore(isWin);
+                } else {
+                    hu.user.scoreList.push(!isWin);
+                    hu.addScore(!isWin);
+                }
+            });
+        }
+
         private mockPutMouse() {
             this.cupList[1].putMouse();
             this.cupList[1].showMouse();
@@ -351,6 +335,11 @@ namespace Client {
                 }
             });
         }
+
+        // ********************************************************************************************************************************************
+        // createX
+        // ********************************************************************************************************************************************
+
 
         private createBg() {
             let sh: egret.SpriteSheet = this.sh;
@@ -436,20 +425,9 @@ namespace Client {
 
         }
 
-        // isWin是站在guess的角度
-        addScore(isWin: boolean) {
-            this.hubList.forEach(hu => {
-                if (Role.guesser == hu.user.role) {
-                    hu.user.scoreList.push(isWin);
-                    hu.addScore(isWin);
-                } else {
-                    hu.user.scoreList.push(!isWin);
-                    hu.addScore(!isWin);
-                }
-            });
-        }
-
        
+
+
 
 
     }
