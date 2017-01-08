@@ -2,7 +2,7 @@
 
 namespace Client {
     export class Game {
-       
+
         currUser: User;
         userList: User[];
         cupList: Cup[];
@@ -233,16 +233,19 @@ namespace Client {
 
         private stage: egret.Stage;
         private sh: egret.SpriteSheet;
-        constructor(stage: egret.Stage) {
+        constructor(stage: egret.Stage, userList: User[], currUserId) {
             this.stage = stage;
             this.sh = RES.getRes('basic_png');
 
-            this.userList = [];
+            this.userList = userList;
             this.cupList = [];
             this.hubList = [];
 
+            this.currUser = _.find(this.userList, us => us.userId == currUserId);
+
             this.createScene();
-            this.createSocket();
+
+            // this.createSocket();
         }
 
         createScene() {
@@ -267,11 +270,11 @@ namespace Client {
         }
 
         createSocket() {
-            
+
         }
 
 
-       
+
         start() {
             this.status = GameStatus.beforePutMouse;
         }
@@ -302,7 +305,7 @@ namespace Client {
 
         }
 
-         // isWin是站在guess的角度
+        // isWin是站在guess的角度
         addScore(isWin: boolean) {
             this.hubList.forEach(hu => {
                 if (Role.guesser == hu.user.role) {
@@ -425,7 +428,7 @@ namespace Client {
 
         }
 
-       
+
 
 
 

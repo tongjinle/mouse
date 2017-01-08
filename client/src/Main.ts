@@ -29,7 +29,7 @@
 /// <reference path="../libs/socketio/socket.io.d.ts" />
 
 class Main extends egret.DisplayObjectContainer {
-
+    private currUser: Client.UserParam;
     private userList: Client.User[];
     /**
      * 加载进度界面
@@ -137,7 +137,7 @@ class Main extends egret.DisplayObjectContainer {
     private createPreScene(): void {
         let pre = this.pre = new Client.Pre(this.stage);
 
-        let currUser = this.getCurrUser();
+        let currUser = this.currUser = this.getCurrUser();
         if (!currUser) {
             throw "invaild UserParam";
         }
@@ -153,12 +153,12 @@ class Main extends egret.DisplayObjectContainer {
      * Create a game scene
      */
     private createGameScene(): void {
-        let userList: Client.User[] = this.mockUserList();
-        let game = this.game = new Client.Game(this.stage);
-        game.userList = userList;
-        game.currUser = game.userList[1];
+        // let userList: Client.User[] = this.mockUserList();
+        let currUserId = this.currUser.userId;
+        let game = this.game = new Client.Game(this.stage, this.userList, currUserId);
+        // game.userList = this.userList;
+        // game.currUser = _.find(this.userList,us=>us.userId == this.currUser.userId);
         game.start();
-        let usp = this.getCurrUser();
 
     }
 
@@ -193,10 +193,12 @@ class Main extends egret.DisplayObjectContainer {
         so.on('ongameStart', (data: { userList: Client.UserData[] }) => {
             this.userList = data.userList.map(us => {
                 let {id, name, animal, role, logoUrl} = us;
-                let user = new Client.User(id, name, animal);
+                let user = new Client.User(id, name, animal, role);
                 user.logoUrl = logoUrl;
                 return user;
             });
+
+            console.log(this.userList);
 
             this.checkPreStatus();
         });
