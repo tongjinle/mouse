@@ -85,6 +85,13 @@ class App {
 
 	bind(io: SocketIO.Server) {
 		io.on('connection', (so) => {
+			// 获取房间
+			so.on(RequestType.getUserListInRoom, (data: { gameId: string }) => {
+				let {gameId} = data;
+				let userList = this.getUserListInRoom(gameId);
+				io.to(gameId).emit(PushType.ongetUserListInRoom, { userList });
+
+			});
 			// 进入房间
 			so.on(RequestType.enterRoom, (data: EnterRoomData) => {
 				let sid = so.id;
@@ -93,7 +100,8 @@ class App {
 				this.joinRoom(sid, data);
 				so.join(data.gameId);
 
-				io.to(gameId).emit(PushType.onenterRoom, data);
+				let userList = this.getUserListInRoom(gameId);
+				io.to(gameId).emit(PushType.onenterRoom, {userList});
 
 				// 查看游戏能否开始
 				let room = this.getRoom(sid);
@@ -102,6 +110,9 @@ class App {
 				if (userCount == CONFIG.userCount) {
 					let userList = _.map(list, (d, index) => {
 						let us = new User();
+						us.id = d.userId;
+						us.name = d.username;
+						us.logoUrl = d.ext.logoUrl;
 						us.animal = index == 0 ? Animal.cat : Animal.dog;
 						return us;
 					});
@@ -109,7 +120,7 @@ class App {
 					this.gameList.push(ga);
 
 					// 广播"游戏开始"
-					io.to(gameId).emit(PushType.ongameStart, { userList: ga.userList });
+					io.to(gameId).emit(PushType.ongameStart, {userList});
 				}
 			});
 

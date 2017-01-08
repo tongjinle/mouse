@@ -21,6 +21,7 @@ export interface Position {
 }
 
 export class RequestType {
+	static getUserListInRoom:string = 'getUserListInRoom';
 	static enterRoom: string = 'enterRoom';
 	static leaveRoom: string = 'leaveRoom';
 	static putMouse: string = 'putMouse';
@@ -31,6 +32,7 @@ export class RequestType {
 }
 
 export class PushType{
+	static ongetUserListInRoom:string = 'ongetUserListInRoom';
 	static onenterRoom: string = 'onenterRoom';
 	static onleaveRoom: string = 'onleaveRoom';
 	static onputMouse: string = 'onputMouse';
