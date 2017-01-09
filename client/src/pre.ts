@@ -1,16 +1,3 @@
-// addCurrUser(param: userParam) {
-//            this.so.emit('enterRoom', param);
-//        }
-
-//        addUser(user: User) {
-
-//        }
-
-//        removeUser(username: string) {
-
-//        }
-
-
 namespace Client {
     export class Pre {
         private stage: egret.Stage;
@@ -30,11 +17,11 @@ namespace Client {
 
             // prepare
             if (v == PreStatus.prepare) {
+                this.te.text = '请准备...';
+                this.btn.visible = true;
+            } else if (v == PreStatus.ready) {
                 this.te.text = '等待其他玩家接入游戏...';
                 this.btn.visible = false;
-            } else if (v == PreStatus.ready) {
-                this.te.text = '请进入游戏';
-                this.btn.visible = true;
             }
         }
 

@@ -137,12 +137,7 @@ class Main extends egret.DisplayObjectContainer {
     private createPreScene(): void {
         let pre = this.pre = new Client.Pre(this.stage);
 
-        let currUser = this.currUser = this.getCurrUser();
-        if (!currUser) {
-            throw "invaild UserParam";
-        }
-
-        this.so.emit('enterRoom', currUser);
+        
     }
 
 
@@ -175,7 +170,7 @@ class Main extends egret.DisplayObjectContainer {
         so.on('onenterRoom', (data: Client.UserParam) => {
             console.log('onenterRoom', data);
 
-
+            this.pre.status = Client.PreStatus.ready;
         });
 
         so.on('onleaveRoom', (data: { userId: string }) => {
@@ -187,7 +182,7 @@ class Main extends egret.DisplayObjectContainer {
                 }
             });
 
-            this.checkPreStatus();
+            // this.checkPreStatus();
         });
 
         so.on('ongameStart', (data: { userList: Client.UserData[] }) => {
@@ -200,25 +195,36 @@ class Main extends egret.DisplayObjectContainer {
 
             console.log(this.userList);
 
-            this.checkPreStatus();
+            this.pre.scene.visible = false;
+            this.createGameScene();
         });
     }
 
-    private checkPreStatus() {
-        this.pre.status = this.userList.length == 2
-            ? Client.PreStatus.ready
-            : Client.PreStatus.prepare
-            ;
-    }
+    // private checkPreStatus() {
+    //     this.pre.status = this.userList.length == 2
+    //         ? Client.PreStatus.ready
+    //         : Client.PreStatus.prepare
+    //         ;
+    // }
 
 
     private bind() {
         this.stage.addEventListener('gameStart', () => {
             console.log('gamestart in main');
-
-            this.pre.scene.visible = false;
-            this.createGameScene();
+            this.enterRoom();
+            
         }, null);
+    }
+
+
+    // 进入房间
+    private enterRoom(){
+        let currUser = this.currUser = this.getCurrUser();
+        if (!currUser) {
+            throw "invaild UserParam";
+        }
+
+        this.so.emit('enterRoom', currUser);
     }
 }
 
