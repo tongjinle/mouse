@@ -10,12 +10,15 @@ namespace Client {
         hand: Hand;
         tip: Tip;
 
+        private so: SocketIOClient.Socket;
+
         // 游戏状态机
         private _status: GameStatus;
         public get status(): GameStatus {
             return this._status;
         }
         public set status(v: GameStatus) {
+            console.log('status:',GameStatus[ this.status],GameStatus[v]);
             this._status = v;
 
             let dict: { [stat: number]: () => void } = {};
@@ -29,25 +32,22 @@ namespace Client {
                 if (this.currUser.role == Role.roller) {
                     // show tips
                     this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
-                    this.cupList.forEach(cu => {
+                    this.cupList.forEach((cu, i) => {
                         let sp = cu.cupSp;
                         sp.touchEnabled = true;
                         sp.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
                             if (this.currUser != this.roller || UserStatus.beforePutMouse != this.roller.status) {
                                 return;
                             }
-                            this.putMouse(cu);
+                            this.reqPutMouse(i);
                             this.currHub.clearTimer();
-                            this.status = GameStatus.beforeRolling;
                         }, this);
                     });
                     // 超时没有放置mouse,就会随机在一个cup中放置mouse
                     this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
                         if (UserStatus.beforePutMouse == this.roller.status) {
-                            let cu = this.cupList[Math.floor(Math.random() * this.cupList.length)];
-                            this.putMouse(cu);
-                            // this.currHub.clearTimer();
-                            this.status = GameStatus.beforeRolling;
+                            let cupIndex = Math.floor(Math.random() * this.cupList.length);
+                            this.reqPutMouse(cupIndex);
                         }
                     });
                 }
@@ -92,7 +92,7 @@ namespace Client {
                         .to({ alpha: 1 }, .5, egret.Ease.bounceIn);
                 };
                 // 提示
-                if (this.currUser = this.roller) {
+                if (this.roller == this.currUser ) {
                     this.tip.showMsg(CONFIG.ROLL_TIP, CONFIG.ROLL_TIP_DURATION, () => { });
                 }
                 // 点击某个杯子,显示出HALO
@@ -269,8 +269,19 @@ namespace Client {
             this.createTip();
         }
 
-        createSocket() {
+        createSocket(so: SocketIOClient.Socket) {
+            this.so = so;
 
+            // 绑定putmouse
+            so.on('onputMouse', (data: { flag: boolean, cupIndex: number }) => {
+                let {flag, cupIndex} = data;
+                if (flag) {
+                    this.putMouse(this.cupList[cupIndex]);
+                    this.status = GameStatus.beforeRolling;
+
+                }
+
+            });
         }
 
 
@@ -279,12 +290,22 @@ namespace Client {
             this.status = GameStatus.beforePutMouse;
         }
 
+        // ********************************************************************************************************************************************
+        // request
+        // ********************************************************************************************************************************************
+        reqPutMouse(cupIndex: number) {
+            this.so.emit('putMouse', { cupIndex });
+        }
 
+
+        // ********************************************************************************************************************************************
+        // render
+        // ********************************************************************************************************************************************
 
         // 放置老鼠
-        private putMouse(cup: Cup) {
+        putMouse(cup: Cup) {
             // ani
-            let height = 300
+            let height = 300;
             let mouseImg = new egret.Bitmap(this.sh.getTexture('mouse_png'));
             let posi = {
                 x: cup.cupSp.x + cup.cupSp.width / 2 - mouseImg.width / 2,

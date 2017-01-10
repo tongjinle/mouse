@@ -153,6 +153,7 @@ class Main extends egret.DisplayObjectContainer {
         let game = this.game = new Client.Game(this.stage, this.userList, currUserId);
         // game.userList = this.userList;
         // game.currUser = _.find(this.userList,us=>us.userId == this.currUser.userId);
+        game.createSocket(this.so);
         game.start();
 
     }
@@ -198,6 +199,8 @@ class Main extends egret.DisplayObjectContainer {
             this.pre.scene.visible = false;
             this.createGameScene();
         });
+
+       
     }
 
     // private checkPreStatus() {
