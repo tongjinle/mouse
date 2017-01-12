@@ -315,6 +315,9 @@ namespace Client {
                 .call(() => {
                     this.stage.removeChild(mouseImg);
                     cup.showMouse();
+                    if(Role.guesser == this.currUser.role){
+                        cup.fadeoutMouse();
+                    }
                 });
 
 

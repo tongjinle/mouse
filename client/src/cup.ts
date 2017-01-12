@@ -69,5 +69,11 @@ namespace Client{
             this.cupImg.texture = this.sh.getTexture('cup_transparent_png');
             this.mouseImg.visible = true;
         }
+
+        fadeoutMouse(){
+            egret.Tween.get(this.mouseImg)
+            .to({alpha:0},600);
+
+        }
     }
 }
