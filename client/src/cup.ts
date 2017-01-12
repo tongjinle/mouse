@@ -71,6 +71,7 @@ namespace Client{
         }
 
         fadeoutMouse(){
+            this.cupImg.texture = this.sh.getTexture('cup_nomal_png');
             egret.Tween.get(this.mouseImg)
             .to({alpha:0},600);
 
