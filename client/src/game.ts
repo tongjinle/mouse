@@ -10,7 +10,9 @@ namespace Client {
         hand: Hand;
         tip: Tip;
 
-        private rollPath: { x: number, y: number }[];
+        private rollStartTime: number;
+
+        private rollPath: { posi: { x: number, y: number }, ts: number }[];
 
         private so: SocketIOClient.Socket;
 
@@ -127,7 +129,7 @@ namespace Client {
                 }, this);
 
                 this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
-                    if(Role.roller != this.currUser.role){
+                    if (Role.roller != this.currUser.role) {
                         return;
                     }
                     this.releaseCup();
@@ -241,23 +243,24 @@ namespace Client {
 
             });
 
-            so.on('onrollCup', (data: { posiList: { x: number, y: number }[] }) => {
+            so.on('onrollCup', (data: { stepList: { posi: { x: number, y: number }, ts: number }[] }) => {
                 if (Role.roller == this.currUser.role) {
                     return;
                 }
-                let {posiList} = data;
-                posiList.forEach((po, i) => {
+                let {stepList} = data;
+                this.rollStartTime = this.rollStartTime || stepList[0].ts;
+                stepList.forEach((step, i) => {
                     setTimeout(function() {
                         if (0 == i) {
-                            this.touchCup(po);
+                            this.touchCup(step.posi);
                         } else {
-                            this.rollCup(po.x);
+                            this.rollCup(step.posi.x);
                         }
-                        if (posiList.length - 1 == i) {
+                        if (stepList.length - 1 == i) {
                             this.releaseCup();
                         }
 
-                    }.bind(this), 50*i);
+                    }.bind(this), step.ts - this.rollStartTime);
 
 
                 });
@@ -278,8 +281,8 @@ namespace Client {
         }
 
         reqRollCup() {
-            console.log('reqRollCup',this.rollPath);
-            this.so.emit('rollCup', { posiList: this.rollPath });
+            console.log('reqRollCup', this.rollPath);
+            this.so.emit('rollCup', { stepList: this.rollPath });
             this.rollPath = [];
         }
 
@@ -292,8 +295,8 @@ namespace Client {
         putMouse(cup: Cup) {
 
             // guess log
-            if(Role.guesser == this.currUser.role){
-                console.log('putmouse',cup);
+            if (Role.guesser == this.currUser.role) {
+                console.log('putmouse', cup);
             }
             // ani
             let height = 300;
@@ -337,8 +340,8 @@ namespace Client {
         private touchCup(posi: { x: number, y: number }) {
 
             // guess log
-            if(Role.guesser == this.currUser.role){
-                console.log('touchCup',posi);
+            if (Role.guesser == this.currUser.role) {
+                console.log('touchCup', posi);
                 window['touchCupPosi'] = posi;
             }
             let cu: Cup = this.getCupByPosi(posi);
@@ -360,7 +363,7 @@ namespace Client {
                 if (Role.roller == this.currUser.role) {
 
                     this.rollPath = [];
-                    this.rollPath.push(posi);
+                    this.rollPath.push({ posi, ts: Date.now() });
                 }
             }
         }
@@ -368,15 +371,15 @@ namespace Client {
         // 移动杯子
         private rollCup(x: number) {
             // guess log
-            if(Role.guesser == this.currUser.role){
-                console.log('rollCup',x);
+            if (Role.guesser == this.currUser.role) {
+                console.log('rollCup', x);
             }
             let cupSp = this.currCup.cupSp;
             cupSp.x = x;
 
             // 记录roll的轨迹
             if (Role.roller == this.currUser.role) {
-                this.rollPath.push({ x: cupSp.x, y: cupSp.y });
+                this.rollPath.push({ posi: { x: cupSp.x, y: cupSp.y }, ts: Date.now() });
             }
 
             let hand = this.hand;
@@ -412,7 +415,7 @@ namespace Client {
         // 放开杯子
         private releaseCup() {
             // guess log
-            if(Role.guesser == this.currUser.role){
+            if (Role.guesser == this.currUser.role) {
                 console.log('releaseCup');
             }
             if (!this.currCup) {
