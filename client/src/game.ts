@@ -44,7 +44,6 @@ namespace Client {
                                 return;
                             }
                             this.reqPutMouse(cu.index);
-                            this.currHub.clearTimer();
                         }, this);
                     });
                     // 超时没有放置mouse,就会随机在一个cup中放置mouse
@@ -99,7 +98,8 @@ namespace Client {
 
                     let cu = this.getCupByPosi({ x, y });
                     if (cu) {
-                        this.touchCup({ x, y });
+                        this.reqTouchCup({x,y});
+                        // this.touchCup({ x, y });
                     }
 
                 }, this);
@@ -115,7 +115,7 @@ namespace Client {
                     }
 
                     // this.currCup = _.find(this.cupList,cu=>cu.hasMouse);
-                    this.rollCup(e.stageX);
+                    this.reqRollCup({x:e.stageX,y:e.stageY});
 
 
 
@@ -127,8 +127,7 @@ namespace Client {
                         return;
                     }
 
-                    this.releaseCup();
-                    this.reqRollCup();
+                    this.reqReleaseCup();
                 }, this);
 
                 this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
@@ -136,9 +135,7 @@ namespace Client {
                     if (Role.roller != this.currUser.role) {
                         return;
                     }
-                    this.releaseCup();
-                    this.reqRollCup();
-                    this.hand.toggle(false);
+                    this.reqReleaseCup();
                 });
             };
 
@@ -234,33 +231,32 @@ namespace Client {
                 let {flag, cupIndex} = data;
                 if (flag) {
                     this.putMouse(this.cupList[cupIndex]);
+                    this.currHub.clearTimer();
                     this.status = GameStatus.beforeRolling;
 
                 }
 
             });
 
-            so.on('onrollCup', (data: { stepList: { posi: { x: number, y: number }, ts: number }[] }) => {
-                if (Role.roller == this.currUser.role) {
-                    return;
-                }
-                let {stepList} = data;
-                this.rollStartTime = this.rollStartTime || stepList[0].ts;
-                stepList.forEach((step, i) => {
-                    setTimeout(function() {
-                        if (0 == i) {
-                            this.touchCup(step.posi);
-                        } else {
-                            this.rollCup(step.posi.x);
-                        }
-                        if (stepList.length - 1 == i) {
-                            this.releaseCup();
-                        }
+            // touchCup
+            so.on('ontouchCup',(data:{flag:boolean,posi:{x:number,y:number}})=>{
+                // if(Role.roller == this.currUser.role){return;}
 
-                    }.bind(this), step.ts - this.rollStartTime);
+                let {flag,posi}=data;
+                this.touchCup(posi);
+            });
 
+            so.on('onrollCup', (data:  { flag:boolean,posi: { x: number, y: number }}) => {
+                // if (Role.roller == this.currUser.role) {
+                //     return;
+                // }
+                let {posi} = data;
+                this.rollCup(posi.x);
+                
+            });
 
-                });
+            so.on('onreleaseCup',()=>{
+               this.releaseCup();
             });
 
             so.on('onguess', (data: { cupIndex: number, isCorrect: boolean }) => {
@@ -288,10 +284,16 @@ namespace Client {
             this.so.emit('putMouse', { cupIndex });
         }
 
-        reqRollCup() {
-            console.log('reqRollCup', this.rollPath);
-            this.so.emit('rollCup', { stepList: this.rollPath });
-            this.rollPath = [];
+        reqTouchCup(posi:{x:number,y:number}){
+            this.so.emit('touchCup',{posi});
+        }
+
+        reqRollCup(posi: { x: number, y: number }) {
+            this.so.emit('rollCup', { posi });
+        }
+
+        reqReleaseCup(){
+            this.so.emit('releaseCup');
         }
 
         reqGuess(cupIndex:number) {
@@ -355,7 +357,7 @@ namespace Client {
                 let cuy = cu.cupSp.y;
                 let cux2 = cux + cu.cupSp.width;
                 let cuy2 = cuy + cu.cupSp.height;
-                console.log(cu.index, { x, y, cux, cuy, cux2, cuy2 });
+                // console.log(cu.index, { x, y, cux, cuy, cux2, cuy2 });
                 return cux <= x && x <= cux2 && cuy <= y && y <= cuy2 && cu.hasMouse;
             });
         }
@@ -363,14 +365,8 @@ namespace Client {
 
         // 抓起杯子
         private touchCup(posi: { x: number, y: number }) {
-
-            // guess log
-            if (Role.guesser == this.currUser.role) {
-                console.log('touchCup', posi);
-                window['touchCupPosi'] = posi;
-            }
             let cu: Cup = this.getCupByPosi(posi);
-            console.log('touchCup', posi, cu);
+            // console.log('touchCup', posi, cu);
             if (cu) {
                 let hand = this.hand;
                 hand.toggle(true);
@@ -384,28 +380,20 @@ namespace Client {
                 this.currCupPosi = { x: sp.x, y: sp.y };
                 this.roller.status = UserStatus.rolling;
 
-                // 记录roll的轨迹
-                if (Role.roller == this.currUser.role) {
-
-                    this.rollPath = [];
-                    this.rollPath.push({ posi, ts: Date.now() });
-                }
             }
         }
 
         // 移动杯子
         private rollCup(x: number) {
             // guess log
-            if (Role.guesser == this.currUser.role) {
-                console.log('rollCup', x);
-            }
+            
             let cupSp = this.currCup.cupSp;
             cupSp.x = x;
 
             // 记录roll的轨迹
-            if (Role.roller == this.currUser.role) {
-                this.rollPath.push({ posi: { x: cupSp.x, y: cupSp.y }, ts: Date.now() });
-            }
+            // if (Role.roller == this.currUser.role) {
+            //     this.rollPath.push({ posi: { x: cupSp.x, y: cupSp.y }, ts: Date.now() });
+            // }
 
             let hand = this.hand;
             hand.sp.x = cupSp.x + cupSp.width / 2;
@@ -439,17 +427,7 @@ namespace Client {
 
         // 放开杯子
         private releaseCup() {
-            // guess log
-            if (Role.guesser == this.currUser.role) {
-                console.log('releaseCup');
-            }
-            if (!this.currCup) {
-                return;
-            }
-
-            if (UserStatus.rolling != this.roller.status) {
-                return;
-            }
+            if (!this.currCup) { return; }
 
             this.currCup.cupSp.x = this.currCupPosi.x;
             this.currCup.cupSp.y = this.currCupPosi.y;
@@ -457,6 +435,9 @@ namespace Client {
             this.hand.toggle(false);
             this.roller.status = UserStatus.beforeRolling;
 
+
+
+            this.hand.toggle(false);
         }
 
 
