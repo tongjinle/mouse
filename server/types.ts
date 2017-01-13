@@ -64,5 +64,5 @@ export interface GuessData{
 
 
 export interface RollCupData{
-	posiList:Position[]
+	stepList:{posi:Position,ts:number}[]
 }
