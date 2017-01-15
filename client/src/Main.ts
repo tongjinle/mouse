@@ -154,6 +154,7 @@ class Main extends egret.DisplayObjectContainer {
         // game.userList = this.userList;
         // game.currUser = _.find(this.userList,us=>us.userId == this.currUser.userId);
         game.createSocket(this.so);
+        // game.bind();
         game.start();
 
     }
@@ -182,7 +183,7 @@ class Main extends egret.DisplayObjectContainer {
                     return true;
                 }
             });
-
+            so.disconnect();
             // this.checkPreStatus();
         });
 

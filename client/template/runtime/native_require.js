@@ -12,6 +12,7 @@ var game_file_list = [
 	"libs/socketio/socket.io.js",
 	"bin-debug/LoadingUI.js",
 	"bin-debug/Main.js",
+	"bin-debug/binder.js",
 	"bin-debug/config.js",
 	"bin-debug/cup.js",
 	"bin-debug/game.js",
