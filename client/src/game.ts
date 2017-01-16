@@ -118,11 +118,12 @@ namespace Client {
                 
                 // 计算currUser的猜测结果
                 let isCorrect  = this.isCorrect;
-                let currRst = Role.guesser == this.currUser.role?isCorrect:!isCorrect;
+                
+                this.roller.isRoundWin = !isCorrect;
+                this.guesser.isRoundWin = isCorrect;
 
-                this.currUser.isRoundWin = currRst;
-                this.currUser.status = UserStatus.afterGuess;    
-
+                this.roller.status = UserStatus.afterGuess;    
+                this.guesser.status = UserStatus.afterGuess;
                
             };
 
@@ -315,7 +316,6 @@ namespace Client {
 
             // 绑定putmouse
             so.on('onputMouse', (data: { flag: boolean, cupIndex: number }) => {
-                console.log('putmouse+++++++');
                 let {flag, cupIndex} = data;
                 if (flag) {
                     this.putMouse(this.cupList[cupIndex]);
@@ -441,7 +441,6 @@ namespace Client {
             hand.sp.x = sp.x + sp.width / 2;
             hand.sp.y = sp.y + sp.height / 2;
 
-            console.trace('mouse++')
             egret.Tween.get(sp)
             .to({y:sp.y-200,alpha:0},400)
             .call(()=>{

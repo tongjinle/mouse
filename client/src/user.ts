@@ -27,12 +27,8 @@ namespace Client {
                 return;
             }
 
-            let count = 8;
-            let index = 1;
+          
             let sh: egret.SpriteSheet;
-
-           
-
             if (this.animal == Animal.cat) {
                 sh = RES.getRes('cat_png');
 
@@ -44,19 +40,22 @@ namespace Client {
                 let list = [];
                 let delay =300;
                 for (var i = 0; i < count; i++) {
-                    list.push(sh.getTexture(`0${index + 1}_png`));
+                    let te = sh.getTexture(`0${i + 1}_png`);
+                    console.log(te,`0${i + 1}_png`);
+                    list.push(te);
                 }
                 this.runFaceAni(list,delay);
               
             } else if (v == UserStatus.afterWatching) {
-                
-            } else if (v == UserStatus.afterGuess||v == UserStatus.afterRolling) {
+                this.stopFaceAni();
+            } else if (v == UserStatus.afterGuess) {
                 let aniPre = this.animal == Animal.dog ? 'd' : 'c';
                 let winPre = this.isRoundWin ? 'r' : 'w';
                 let delay = 200;
+                console.log(Animal[this.animal], this.isRoundWin,winPre);
                 let list = [
-                    sh.getTexture(`${aniPre}_${winPre}_01.png`),
-                    sh.getTexture(`${aniPre}_${winPre}_02.png`)
+                    sh.getTexture(`${aniPre}_${winPre}_01_png`),
+                    sh.getTexture(`${aniPre}_${winPre}_02_png`)
                 ];
                 this.runFaceAni(list,delay);
             }
@@ -76,12 +75,17 @@ namespace Client {
             let index = 0;
             let len = textureList.length;
             ti.addEventListener(egret.TimerEvent.TIMER,()=>{
+                console.log('timer...');
                 this.face.texture = textureList[index];
                 index = (index+1)%len;
             },null);
 
+            ti.start();
 
+        }
 
+        private stopFaceAni(){
+            this.faceAniTimer && this.faceAniTimer.stop();
         }
 
         isFront: boolean;
