@@ -1,6 +1,6 @@
 namespace Client {
     type watchParam = {
-        isBind: boolean
+        isBind?: boolean
         beWatched: egret.DisplayObject
         eventname: string
         handler: Function

@@ -10,6 +10,20 @@ namespace Client {
         hand: Hand;
         tip: Tip;
 
+        isCorrect :boolean;
+
+
+        private _mouseImg : egret.Bitmap;
+        public get mouseImg() : egret.Bitmap {
+            if(!this._mouseImg){
+                this._mouseImg = new egret.Bitmap(this.sh.getTexture('mouse_png'));
+                this.stage.addChild(this._mouseImg);
+            }
+                
+            return this._mouseImg;
+        }
+       
+
         private so: SocketIOClient.Socket;
 
         // 游戏状态机
@@ -38,6 +52,9 @@ namespace Client {
                    
                     // 超时没有放置mouse,就会随机在一个cup中放置mouse
                     this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
+                        if(GameStatus.beforePutMouse!=this.status){
+                            return;
+                        }
                         if (UserStatus.beforePutMouse == this.roller.status) {
                             let cupIndex = Math.floor(Math.random() * this.cupList.length);
                             this.reqPutMouse(this.cupList[cupIndex].index);
@@ -63,13 +80,6 @@ namespace Client {
                 this.roller.status = UserStatus.beforeRolling;
                 this.guesser.status = UserStatus.watching;
 
-                // this.stage.touchEnabled = true;
-                // console.log(this.stage.touchEnabled+'0000');
-                window['s1'] = this.stage;
-                this.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN,()=>{
-                    console.log('123');
-                },null);
-
                 // 提示
                 if (this.roller == this.currUser) {
                     this.tip.showMsg(CONFIG.ROLL_TIP, CONFIG.ROLL_TIP_DURATION, () => { });
@@ -93,20 +103,29 @@ namespace Client {
                 this.guesser.status = UserStatus.afterWatching;
 
 
-                this.cupList.forEach(cu => {
-                    cu.cupSp.touchEnabled = true;
-                    cu.cupSp.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (event: egret.TouchEvent) => {
-                        if (Role.guesser != this.currUser.role) {
-                            return;
-                        }
+                 if(Role.guesser == this.currUser.role){
+                    this.tip.showMsg(CONFIG.GUESS_MOUSE_TIP,CONFIG.GUESS_MOUSE_TIP_DURATION,()=>{});
+                     
+                 }
 
-                        this.guessMouse(cu.index);
-                        this.reqGuess(cu.index);
-                    }, this);
-                });
-
-                // this.tip.showMsg()
             };
+
+            // ********************************************************************************************************************************************
+            // afterGuess
+            // ********************************************************************************************************************************************
+            dict[GameStatus.afterGuess] =()=>{
+                console.log('afterGuess');
+                
+                // 计算currUser的猜测结果
+                let isCorrect  = this.isCorrect;
+                let currRst = Role.guesser == this.currUser.role?isCorrect:!isCorrect;
+
+                this.currUser.isRoundWin = currRst;
+                this.currUser.status = UserStatus.afterGuess;    
+
+               
+            };
+
 
 
             dict[v]();
@@ -180,6 +199,7 @@ namespace Client {
                 let sp = cu.cupSp;
                 sp.touchEnabled = true;
 
+                // putMouse
                 binder.watch({
                     beWatched: sp,
                     eventname: egret.TouchEvent.TOUCH_BEGIN,
@@ -188,10 +208,27 @@ namespace Client {
                             return;
                         }
                         this.reqPutMouse(cu.index);
+                        // this.status = GameStatus.beforeRolling
                     },
                     context: this,
                     onStatus: GameStatus[GameStatus.beforePutMouse],
                     offStatus: Binder.OTHER_STATUS
+                });
+
+                // guessMouse
+                binder.watch({
+                    beWatched:sp,
+                    eventname:egret.TouchEvent.TOUCH_BEGIN,
+                    handler:(e:egret.TouchEvent)=>{
+                        if (Role.guesser != this.currUser.role) {
+                            return;
+                        }
+                        this.reqGuess(cu.index);
+                        // this.status = GameStatus.afterGuess;
+                    },
+                    context:this,
+                    onStatus:GameStatus[GameStatus.afterRolling],
+                    offStatus:Binder.OTHER_STATUS
                 });
 
             });
@@ -200,7 +237,6 @@ namespace Client {
             // 点击某个杯子,显示出HALO
             // 开始roll
             binder.watch({
-                beWatchType: Binder.BEWATCHED_TYPE.stage,
                 beWatched: this.stage,
                 eventname: egret.TouchEvent.TOUCH_BEGIN,
                 handler: (e: egret.TouchEvent) => {
@@ -234,7 +270,6 @@ namespace Client {
 
             // 点击某个cup,进入ROLLING状态
             binder.watch({
-                beWatchType: Binder.BEWATCHED_TYPE.stage,
                 beWatched: this.stage,
                 eventname: egret.TouchEvent.TOUCH_MOVE,
                 handler: (e: egret.TouchEvent) => {
@@ -259,7 +294,6 @@ namespace Client {
 
             // roll结束
             binder.watch({
-                beWatchType: Binder.BEWATCHED_TYPE.stage,
                 beWatched: this.stage,
                 eventname: egret.TouchEvent.TOUCH_END,
                 handler: (e: egret.TouchEvent) => {
@@ -281,6 +315,7 @@ namespace Client {
 
             // 绑定putmouse
             so.on('onputMouse', (data: { flag: boolean, cupIndex: number }) => {
+                console.log('putmouse+++++++');
                 let {flag, cupIndex} = data;
                 if (flag) {
                     this.putMouse(this.cupList[cupIndex]);
@@ -313,13 +348,14 @@ namespace Client {
             });
 
             so.on('onguess', (data: { cupIndex: number, isCorrect: boolean }) => {
+                let {cupIndex,isCorrect} = data;
+                this.isCorrect = isCorrect;
+                this.guessMouse(cupIndex, isCorrect, () => {
+                    this.status = GameStatus.afterGuess;
+                });
+            });
 
-                if (Role.roller == this.currUser.role) {
-                    this.guessMouse(data.cupIndex);
-                }
-
-
-                // 显示对错
+            so.on('onround',(data)=>{
 
             });
         }
@@ -367,7 +403,7 @@ namespace Client {
             }
             // ani
             let height = 300;
-            let mouseImg = new egret.Bitmap(this.sh.getTexture('mouse_png'));
+            let mouseImg = this.mouseImg;
             let posi = {
                 x: cup.cupSp.x + cup.cupSp.width / 2 - mouseImg.width / 2,
                 y: cup.cupSp.y + cup.cupSp.height / 2 - mouseImg.height / 2 - height
@@ -376,11 +412,10 @@ namespace Client {
             mouseImg.y = posi.y;
             mouseImg.alpha = 1;
             cup.putMouse();
-            this.stage.addChild(mouseImg);
             egret.Tween.get(mouseImg)
                 .to({ y: posi.y + height, alpha: .3 }, 800)
                 .call(() => {
-                    this.stage.removeChild(mouseImg);
+                    this.mouseImg.alpha = 0;
                     cup.showMouse();
                     if (Role.guesser == this.currUser.role) {
                         cup.fadeoutMouse();
@@ -392,14 +427,41 @@ namespace Client {
 
         }
 
-        guessMouse(cupIndex: number) {
+        // 猜老鼠在哪个cup
+        guessMouse(cupIndex: number,isCorrect:boolean,next:()=>void) {
             let hand = this.hand;
-            hand.toggle(true);
+            hand.toggle(false);
 
             let cu = _.find(this.cupList, cu => cu.index == cupIndex);
             let sp = cu.cupSp;
+            let center = {
+                x: sp.x + sp.width/2,
+                y:sp.y+sp.height/2
+            };
             hand.sp.x = sp.x + sp.width / 2;
             hand.sp.y = sp.y + sp.height / 2;
+
+            console.trace('mouse++')
+            egret.Tween.get(sp)
+            .to({y:sp.y-200,alpha:0},400)
+            .call(()=>{
+                hand.toggle(false);
+            })
+            .call(()=>{
+                if(isCorrect){
+                    let mouseImg = this.mouseImg;
+                    mouseImg.x = center.x-mouseImg.width/2;
+                    mouseImg.y = center.y - mouseImg.height/2;
+                    mouseImg.alpha = 0.1;
+                    mouseImg.scaleX = mouseImg.scaleY = .3;
+
+                    egret.Tween.get(mouseImg)
+                    .to({alpha:1,scaleX:1,scaleY:1},600,egret.Ease.backInOut)
+                    .call(()=>this.addScore(isCorrect,next));
+                }else{
+                    this.addScore(isCorrect,next);
+                }
+            });
         }
 
         private getCupByPosi(posi: { x: number, y: number }): Cup {
@@ -495,7 +557,7 @@ namespace Client {
 
 
         // isWin是站在guess的角度
-        addScore(isWin: boolean) {
+        addScore(isWin: boolean,next?:()=>void) {
             this.hubList.forEach(hu => {
                 if (Role.guesser == hu.user.role) {
                     hu.user.scoreList.push(isWin);
@@ -505,6 +567,8 @@ namespace Client {
                     hu.addScore(!isWin);
                 }
             });
+
+            next && next();
         }
 
         private mockPutMouse() {

@@ -8,6 +8,9 @@ namespace Client {
         animal: Animal;
         // status:UserStatus;
 
+        // 记录本回合是不是胜利
+        isRoundWin: boolean = false;
+
         private _status: UserStatus;
         public get status(): UserStatus {
             return this._status;
@@ -28,11 +31,7 @@ namespace Client {
             let index = 1;
             let sh: egret.SpriteSheet;
 
-            let ti = this.faceAniTimer = this.faceAniTimer || new egret.Timer(300, 0);
-            ti.addEventListener(egret.TimerEvent.TIMER, () => {
-                this.frontFace.texture = sh.getTexture(`0${index + 1}_png`);
-                index = (index + 1) % count
-            }, this);
+           
 
             if (this.animal == Animal.cat) {
                 sh = RES.getRes('cat_png');
@@ -41,10 +40,25 @@ namespace Client {
                 sh = RES.getRes('dog_png');
             }
             if (v == UserStatus.watching) {
-                ti.reset();
-                ti.start();
+                let count = 8;
+                let list = [];
+                let delay =300;
+                for (var i = 0; i < count; i++) {
+                    list.push(sh.getTexture(`0${index + 1}_png`));
+                }
+                this.runFaceAni(list,delay);
+              
             } else if (v == UserStatus.afterWatching) {
-                ti.reset();
+                
+            } else if (v == UserStatus.afterGuess||v == UserStatus.afterRolling) {
+                let aniPre = this.animal == Animal.dog ? 'd' : 'c';
+                let winPre = this.isRoundWin ? 'r' : 'w';
+                let delay = 200;
+                let list = [
+                    sh.getTexture(`${aniPre}_${winPre}_01.png`),
+                    sh.getTexture(`${aniPre}_${winPre}_02.png`)
+                ];
+                this.runFaceAni(list,delay);
             }
 
         }
@@ -52,6 +66,23 @@ namespace Client {
         private frontFace: egret.Bitmap;
         private backFace: egret.Bitmap;
         private faceAniTimer: egret.Timer;
+
+        private runFaceAni(textureList: egret.Texture[], delay: number) {
+            if(this.faceAniTimer && this.faceAniTimer.running){
+                this.faceAniTimer.stop();
+                this.faceAniTimer = null;
+            }
+            let ti = this.faceAniTimer =  new egret.Timer(delay, 0);
+            let index = 0;
+            let len = textureList.length;
+            ti.addEventListener(egret.TimerEvent.TIMER,()=>{
+                this.face.texture = textureList[index];
+                index = (index+1)%len;
+            },null);
+
+
+
+        }
 
         isFront: boolean;
 
