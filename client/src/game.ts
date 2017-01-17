@@ -124,7 +124,37 @@ namespace Client {
 
                 this.roller.status = UserStatus.afterGuess;    
                 this.guesser.status = UserStatus.afterGuess;
-               
+                
+
+                setTimeout(()=>{
+                    this.status = GameStatus.gameEnd;
+                },CONFIG.REST_DURATION);
+            };
+
+            dict[GameStatus.gameEnd]=()=>{
+                console.log('game end');
+                // cupList
+                this.resetCup();
+
+                // mouseImg
+                this.mouseImg.alpha=0;
+
+                // curr...
+                this.currCup = undefined;
+                this.currCupPosi = undefined;
+                this.currGuessCupIndex = undefined;
+
+
+                // face
+                this.userList.forEach(us=>{
+                    us.role = Role.guesser == us.role? Role.roller : Role.guesser;
+                    us.resetRole(us.role);
+                });
+
+                setTimeout(()=>{
+                    this.status = GameStatus.beforePutMouse;
+                },500);
+
             };
 
 
@@ -145,9 +175,9 @@ namespace Client {
             return _.find(this.hubList, hu => hu.user == this.currUser);
         }
 
-        // private halo: egret.Bitmap;
         private currCup: Cup;
         private currCupPosi: { x: number, y: number };
+        private currGuessCupIndex:number;
 
         private stage: egret.Stage;
         private sh: egret.SpriteSheet;
@@ -224,6 +254,10 @@ namespace Client {
                         if (Role.guesser != this.currUser.role) {
                             return;
                         }
+                        if(this.currGuessCupIndex!==undefined){
+                            return;
+                        }
+                        this.currGuessCupIndex = cu.index;
                         this.reqGuess(cu.index);
                         // this.status = GameStatus.afterGuess;
                     },
@@ -353,6 +387,19 @@ namespace Client {
                 this.guessMouse(cupIndex, isCorrect, () => {
                     this.status = GameStatus.afterGuess;
                 });
+            });
+
+
+            so.on('onpublishScore', (data: { userIdList: string[], result: number[] }) => {
+                let {userIdList, result} = data;
+                // host is first roller
+                let isHost = userIdList[0] == this.currUser.userId;
+                let realRst = result.map((re, i) => ((i % 2) == (isHost ? 0 : 1)) ? (re + 1) % 2 : re);
+                console.log('realRst:', this.currUser.username, realRst);
+                let isWin = realRst.filter(re => re == 1).length >= 2;
+
+
+                this.showRst(isWin);
             });
 
             so.on('onround',(data)=>{
@@ -570,25 +617,8 @@ namespace Client {
             next && next();
         }
 
-        private mockPutMouse() {
-            this.cupList[1].putMouse();
-            this.cupList[1].showMouse();
-        }
-
-        private mockScore() {
-            this.addScore(true);
-            this.addScore(false);
-        }
-
-        private mockHubRuntimer() {
-            _.find(this.hubList, hu => {
-                if (this.currUser == hu.user) {
-                    hu.runTimer(5, () => {
-                        console.log('5s done!!');
-                    });
-                    return true;
-                }
-            });
+        showRst(isWin:boolean){
+            console.log('showRst',isWin);
         }
 
         // ********************************************************************************************************************************************
@@ -634,21 +664,31 @@ namespace Client {
 
         }
 
+        private resetCup(){
+            let cupList = this.cupList;
+            let cupCount = cupList.length;
+            for (let i = 0; i <  cupCount; i++) {
+                let cu = cupList[i];
+                let sp = cu.cupSp;
+                let margin = (this.stage.stageWidth - cupCount * sp.width) / (cupCount + 1);
+                sp.x = margin + (sp.width + margin) * i;
+                sp.y = this.stage.height / 2 - 120;
+                sp.alpha = 1;
+                cu.setShadowOpacity((cupCount - i) / cupCount);
+                cu.fadeoutMouse();
+            }
+        }
+
         private createCups() {
             let cupCount = 3;
             let cupList = this.cupList;
             for (let i = 0; i < cupCount; i++) {
                 let cu = new Cup(i);
                 let sp = cu.cupSp;
-                let margin = (this.stage.stageWidth - cupCount * sp.width) / (cupCount + 1);
-                sp.x = margin + (sp.width + margin) * i;
-                sp.y = this.stage.height / 2 - 120;
                 this.stage.addChild(sp);
-
-                cu.setShadowOpacity((cupCount - i) / cupCount);
-
                 cupList.push(cu);
             }
+            this.resetCup();
         }
 
         private createHubs() {
@@ -679,8 +719,6 @@ namespace Client {
 
 
         }
-
-
 
 
 

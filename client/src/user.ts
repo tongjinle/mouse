@@ -35,13 +35,17 @@ namespace Client {
             } else {
                 sh = RES.getRes('dog_png');
             }
-            if (v == UserStatus.watching) {
+
+            if(UserStatus.beforePutMouse == v || UserStatus.beforeWatching== v){
+                this.stopFaceAni();
+                let an = this.animal == Animal.dog?'dog':'cat';
+                this.face.texture =sh.getTexture(`${an}_front_png`);
+            }else if (v == UserStatus.watching) {
                 let count = 8;
                 let list = [];
                 let delay =300;
                 for (var i = 0; i < count; i++) {
                     let te = sh.getTexture(`0${i + 1}_png`);
-                    console.log(te,`0${i + 1}_png`);
                     list.push(te);
                 }
                 this.runFaceAni(list,delay);
