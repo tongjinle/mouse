@@ -1,3 +1,11 @@
+export enum GameStatus{
+	beforePutMouse,
+	beforeRolling,
+	beforeGuess,
+	roundEnd,
+	gameEnd
+}
+
 export enum Role {
 	guess,
 	roll
@@ -25,7 +33,9 @@ export class RequestType {
 	static enterRoom: string = 'enterRoom';
 	static leaveRoom: string = 'leaveRoom';
 	static putMouse: string = 'putMouse';
+	static touchCup: string = 'touchCup';
 	static rollCup: string = 'rollCup';
+	static releaseCup: string = 'releaseCup';
 	static guess: string = 'guess';
 	static publishScore: string = 'publishScore';
 
@@ -36,21 +46,25 @@ export class PushType{
 	static onenterRoom: string = 'onenterRoom';
 	static onleaveRoom: string = 'onleaveRoom';
 	static onputMouse: string = 'onputMouse';
+	static ontouchCup: string = 'ontouchCup';
 	static onrollCup: string = 'onrollCup';
+	static onreleaseCup: string = 'onreleaseCup';
 	static onguess: string = 'onguess';
 	static onpublishScore: string = 'onpublishScore';
 	static ongameStart: string = 'ongameStart';
+
+	static onstatusChange:string = 'onstatusChange';
 }
 
 
 /* 数据协议 */
 export interface EnterRoomData{
-	gameId: string,
-	userId: string,
-	username: string,
+	gameId: string;
+	userId: string;
+	username: string;
 	ext: {
-		logoUrl: string
-	}
+		logoUrl: string;
+	};
 }
 
 
@@ -62,7 +76,15 @@ export interface GuessData{
 	cupIndex:number;
 }
 
+export interface TouchCupData{
+	posi:Position;
+}
 
 export interface RollCupData{
-	stepList:{posi:Position,ts:number}[]
+	posi:Position;
 }
+
+
+
+
+

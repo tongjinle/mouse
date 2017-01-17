@@ -10,6 +10,7 @@ import {
     EnterRoomData,
     PutMouseData,
     GuessData,
+    TouchCupData,
     RollCupData
 } from './types';
 import Room from './room';
@@ -81,6 +82,10 @@ class App {
         return ro ? _.find(this.gameList, ga => ga.id == ro.gameId) : undefined;
     }
 
+    private delGame(gid:string){
+    	this.gameList = _.filter(this.gameList,ga => ga.id!=gid);
+    }
+
     private getUserId(sid: string): string {
         return this.getRoom(sid).userId;
     }
@@ -105,6 +110,8 @@ class App {
                 let userList = this.getUserListInRoom(gameId);
                 io.to(gameId).emit(PushType.onenterRoom, { userList });
 
+                console.log('gameLen',this.gameList.length);
+
                 // 查看游戏能否开始
                 let room = this.getRoom(sid);
                 let list = this.getUserListInRoom(gameId);
@@ -119,6 +126,7 @@ class App {
                         return us;
                     });
                     let ga = new Game(gameId, userList);
+                    // console.log(userList);
                     this.gameList.push(ga);
 
                     // 广播"游戏开始"
@@ -128,6 +136,13 @@ class App {
 
             so.on(RequestType.putMouse, (data: PutMouseData) => {
                 let ga = this.getGame(so.id);
+
+                // 防止重复的putMouse
+                if(ga.cupIndex!==undefined){
+                	console.log(ga.cupIndex);
+                	return;
+                }
+
                 let userId = this.getUserId(so.id);
                 let cupIndex = data.cupIndex;
                 let flag = ga.putMouse(userId, cupIndex);
@@ -136,24 +151,43 @@ class App {
                 io.to(gameId).emit(PushType.onputMouse, { flag, cupIndex });
             });
 
+            so.on(RequestType.touchCup, (data: TouchCupData) => {
+                let ga = this.getGame(so.id);
+                let gameId = ga.id;
+                let flag = true;
+                let {posi} = data;
+                io.to(gameId).emit(PushType.ontouchCup, { flag, posi });
+            });
+
             so.on(RequestType.rollCup, (data: RollCupData) => {
                 console.log(so.id, RequestType[RequestType.rollCup], data);
 
                 let ga = this.getGame(so.id);
                 let userId = this.getUserId(so.id);
-                let stepList = data.stepList;
-                // let flag = ga.rollCup(userId, posiList);
+                let {posi} = data;
+
                 let flag = true;
 
                 let gameId = ga.id;
-                // console.log({posiList});
-                let cupIndex = ga.cupIndex;
-                io.to(gameId).emit(PushType.onrollCup, { flag,  stepList });
+                io.to(gameId).emit(PushType.onrollCup, { flag, posi });
 
+            });
+
+            so.on(RequestType.releaseCup,()=>{
+            	let ga = this.getGame(so.id);
+                let gameId = ga.id;
+                let flag = true;
+                io.to(gameId).emit(PushType.onreleaseCup, { flag });
             });
 
             so.on(RequestType.guess, (data: GuessData) => {
                 let ga = this.getGame(so.id);
+
+                // 防止重复guess
+                if(ga.guessCupIndex!==undefined){
+                	return;
+                }
+
                 let userId = this.getUserId(so.id);
                 let cupIndex = data.cupIndex;
                 let flag = ga.guessMouse(userId, cupIndex);
@@ -168,8 +202,9 @@ class App {
                 // 是否要全部推送总分
                 if (ga.isOver) {
                     let userIdList = ga.userList.map(us => us.id);
-                    let result;
-                    so.emit(PushType.onpublishScore, {
+                    let result = ga.scoreList;
+
+                    io.to(gameId).emit(PushType.onpublishScore, {
                         userIdList,
                         result
                     });
@@ -177,16 +212,18 @@ class App {
             });
 
             so.on('disconnect', () => {
+            	console.log('disconnect....');
+               	let sid = so.id;
+                let room = this.getRoom(sid);
 
-                let room = this.getRoom(so.id);
-
-                this.leaveRoom(so.id);
                 // 
-                let ga = this.getGame(so.id);
+                let ga = this.getGame(sid);
                 if (ga) {
                     let gameId = ga.id;
+                    this.delGame(gameId);
                     this.gameList = this.gameList.filter(ga => ga.id != gameId);
-
+                    console.log('ondisconnet,game len:',this.gameList.length);
+                    // 删除另一个人的room信息
                     _.each(this.dict, (ro, sid) => {
                         if (ro.gameId == gameId) {
                             delete this.dict[sid];
@@ -194,6 +231,8 @@ class App {
                     });
 
                 }
+
+                this.leaveRoom(sid);
 
                 if (room) {
 

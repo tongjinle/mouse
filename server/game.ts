@@ -1,7 +1,7 @@
 import * as _ from 'underscore';
 import User from './user';
 import CONFIG from './config';
-import { Animal, Role, Position, Score } from './types';
+import { Animal, Role, Position, Score,GameStatus } from './types';
 
 export default class Game {
 	// id
@@ -9,6 +9,7 @@ export default class Game {
 	// 玩家列表
 	userList: User[];
 	// 比分列表
+	// 记录猜测者的对错
 	scoreList: number[];
 	// 盘数
 	gameCount: number = CONFIG.gameCount;
@@ -22,16 +23,19 @@ export default class Game {
 	guessCupIndex: number;
 	// 晃动的轨迹
 	path: Position[];
+	// 游戏状态
+	status:GameStatus;
 
 	public get isOver() : boolean {
-		return this.gameCount-1 == this.roundCount;
+		return (this.gameCount == this.roundCount)
+			||(this.scoreList.length==2 && this.scoreList[0]!=this.scoreList[1]);
 	}
 
 	constructor(id:string,userList: User[]) {
 		this.id = id;
 		this.userList = userList;
 		this.scoreList = [];
-		this.roundCount = 0;
+		this.roundCount = -1;
 
 		this.round();
 	}
@@ -46,6 +50,7 @@ export default class Game {
 			return false;
 		}
 		this.cupIndex = cupIndex;
+		this.status = GameStatus.beforeRolling;
 		return true;
 	}
 
@@ -56,6 +61,7 @@ export default class Game {
 			return false;
 		}
 		this.path = posiList;
+		this.status = GameStatus.beforeGuess;
 		return true;
 	}
 
@@ -70,33 +76,35 @@ export default class Game {
 		}
 
 		this.guessCupIndex = cupIndex;
+		console.log('in guess mouse:',userId,cupIndex,this.roundCount);
 
 		this.scoreList.push(this.guessCupIndex == this.cupIndex ? Score.win : Score.lost);
-
-		this.roundCount++;
-
+		this.status = GameStatus.roundEnd;
+		this.round();
 		return true;
 	}
 
 
 	// 回合
-	// false表示已经整个游戏都已经结束了
+	// false表示已经整个游戏都已经结束了//
 	round():boolean{
+		this.roundCount++;
 		if(this.isOver){
+			this.status = GameStatus.gameEnd;
 			return false;
 		}
 		this.reset();
+		this.status = GameStatus.beforePutMouse;
 		return true;
 	}
 
 	// 重新开始
-	private roundIndex: number = 0;
 	private reset() {
 		// 交换猜测者和晃动者
 		this.userList.forEach((us, index) => {
-			us.role = index == this.roundIndex ? Role.roll : Role.guess;
+			// console.log(index,this.roundCount);
+			us.role = index == ((this.roundCount+1)%2) ? Role.roll : Role.guess;
 		});
-		this.roundIndex = (this.roundIndex + 1) % this.userList.length;
 
 		// 清空一些记录数据,把他们初始化
 		this.cupIndex = undefined;
