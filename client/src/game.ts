@@ -127,12 +127,13 @@ namespace Client {
                 
 
                 setTimeout(()=>{
-                    this.status = GameStatus.gameEnd;
+                    this.status = GameStatus.roundEnd;
                 },CONFIG.REST_DURATION);
             };
 
-            dict[GameStatus.gameEnd]=()=>{
-                console.log('game end');
+            let reRoundHandler;
+            dict[GameStatus.roundEnd]=()=>{
+                console.log('round end');
                 // cupList
                 this.resetCup();
 
@@ -151,10 +152,17 @@ namespace Client {
                     us.resetRole(us.role);
                 });
 
-                setTimeout(()=>{
+                let reRoundHandler = setTimeout(()=>{
                     this.status = GameStatus.beforePutMouse;
+                    reRoundHandler = undefined;
                 },500);
 
+            };
+
+            dict[GameStatus.gameEnd] =()=>{
+                if(reRoundHandler){
+                    clearTimeout(reRoundHandler);
+                }
             };
 
 
@@ -400,6 +408,8 @@ namespace Client {
 
 
                 this.showRst(isWin);
+
+                this.status = GameStatus.gameEnd;
             });
 
             so.on('onround',(data)=>{
@@ -411,6 +421,16 @@ namespace Client {
 
         start() {
             this.status = GameStatus.beforePutMouse;
+            // this.showRst(true);
+            this.playAudio('bgm_mp3','bgm');
+        }
+
+        playAudio(name:string,type:string){
+            let sound:egret.Sound = RES.getRes('bgm_mp3');
+             // new egret.Sound();
+            // sound.load('resource/assets/bgm.mp3');
+            // sound.load(RES.getRes(name));
+            sound.play();
         }
 
         // ********************************************************************************************************************************************
@@ -619,6 +639,18 @@ namespace Client {
 
         showRst(isWin:boolean){
             console.log('showRst',isWin);
+            // mask
+            let ma = new egret.Shape();
+            ma.graphics.beginFill(0x000000,.8);
+            ma.graphics.drawRect(0,0,this.stage.stageWidth,this.stage.stageHeight);
+            ma.graphics.endFill();
+            this.stage.addChild(ma);
+
+            // scoreBoard
+            let sb = new ScoreBoard(this.currUser.animal,isWin);
+            sb.sp.x = this.stage.stageWidth/2 - sb.sp.width/2;
+            sb.sp.y=200;
+            this.stage.addChild(sb.sp);
         }
 
         // ********************************************************************************************************************************************

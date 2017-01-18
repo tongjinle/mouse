@@ -1,7 +1,7 @@
 {
 	"groups":[
 	{
-		"keys":"egret_icon_png,basic_png,cat_png,dog_png,hand_png,pre_png,nums_fnt",
+		"keys":"egret_icon_png,basic_png,cat_png,dog_png,hand_png,pre_png,scoreBoard_png,nums_fnt,bgm_mp3",
 		"name":"preload"
 	}],
 	"resources":[
@@ -34,6 +34,26 @@
 		"name":"pre_png",
 		"type":"sheet",
 		"url":"assets/pre.json"
+	},
+	{
+		"name":"scoreBoard_png",
+		"type":"sheet",
+		"url":"assets/scoreBoard.json"
+	},{
+		"name":"bgm_mp3",
+		"type":"sound",
+		"soundType":"music",
+		"url":"assets/bgm.mp3"
+	},{
+		"name":"lost_wav",
+		"type":"sound",
+		"soundType":"effect",
+		"url":"assets/lost.wav"
+	},{
+		"name":"win_wav",
+		"type":"sound",
+		"soundType":"effect",
+		"url":"assets/win.wav"
 	},
 	{
 		"name":"nums_fnt",

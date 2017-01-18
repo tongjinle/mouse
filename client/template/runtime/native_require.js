@@ -19,6 +19,7 @@ var game_file_list = [
 	"bin-debug/hand.js",
 	"bin-debug/hub.js",
 	"bin-debug/pre.js",
+	"bin-debug/scoreBoard.js",
 	"bin-debug/tip.js",
 	"bin-debug/types.js",
 	"bin-debug/urlParser.js",

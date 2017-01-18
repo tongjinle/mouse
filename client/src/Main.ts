@@ -204,13 +204,6 @@ class Main extends egret.DisplayObjectContainer {
        
     }
 
-    // private checkPreStatus() {
-    //     this.pre.status = this.userList.length == 2
-    //         ? Client.PreStatus.ready
-    //         : Client.PreStatus.prepare
-    //         ;
-    // }
-
 
     private bind() {
         this.stage.addEventListener('gameStart', () => {
