@@ -19,7 +19,7 @@ namespace Client {
                 this._mouseImg = new egret.Bitmap(this.sh.getTexture('mouse_png'));
                 this.stage.addChild(this._mouseImg);
             }
-                
+            
             return this._mouseImg;
         }
        
@@ -39,6 +39,23 @@ namespace Client {
             this.binder.refresh(GameStatus[v]);
 
             let dict: { [stat: number]: () => void } = {};
+
+
+            
+            // ********************************************************************************************************************************************
+            // beforeShowMouse
+            // ********************************************************************************************************************************************
+            dict[GameStatus.beforeShowMouse] = ()=>{
+                this.showMouse(()=>{
+                    this.status = GameStatus.beforeHoldMouse;
+                });
+            };
+
+            // ********************************************************************************************************************************************
+            // beforePutMouse
+            // ********************************************************************************************************************************************
+            
+
             // ********************************************************************************************************************************************
             // beforePutMouse
             // ********************************************************************************************************************************************
@@ -420,9 +437,9 @@ namespace Client {
 
 
         start() {
-            this.status = GameStatus.beforePutMouse;
+            this.status = GameStatus.beforeShowMouse;
             // this.showRst(true);
-            this.playAudio('bgm_mp3','bgm');
+            // this.playAudio('bgm_mp3','bgm');
         }
 
         playAudio(name:string,type:string){
@@ -456,10 +473,39 @@ namespace Client {
             this.so.emit('guess', { cupIndex});
         }
 
+        reqNotify(type:string,data:any){
+            this.so.emit('notify')
+        }
+
 
         // ********************************************************************************************************************************************
         // render
         // ********************************************************************************************************************************************
+
+        // 显示等待抓起的老鼠
+        // 老鼠要说,请把我藏起来(guess不用显示文字)
+        showMouse(next:()=>void) {
+            let mo = this.mouseImg;
+            mo.visible = true;
+            if (Role.guesser == this.currUser.role) {
+                let tip = this.tip;
+                tip.showMsg(CONFIG.GUESS_MOUSE_TIP, CONFIG.GUESS_MOUSE_TIP_DURATION, next);
+
+            }
+        }
+        
+
+        // 抓起老鼠(或者叫握住老鼠)
+        holdMouse(){
+
+        }
+
+        // 移动抓起的老鼠,遇到杯子,杯子抬起来的动画
+        // 已经抬起来的杯子,应该立刻放下
+        moveMouse(){
+
+        }
+
 
         // 放置老鼠
         putMouse(cup: Cup) {

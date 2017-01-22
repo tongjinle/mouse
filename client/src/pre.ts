@@ -75,6 +75,8 @@ namespace Client {
                 let ev: egret.Event = new egret.Event('gameStart',true);
                 btn.dispatchEvent(ev);
             }, null);
+
+            btn.willTrigger(egret.TouchEvent.TOUCH_END);
         }
 
         private createTip() {

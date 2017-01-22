@@ -1,6 +1,7 @@
 namespace Client {
     export class Tip {
         tx: egret.TextField;
+        private bg:egret.Bitmap;
         constructor() {
             let tx = this.tx = new egret.TextField();
             tx.textAlign = egret.HorizontalAlign.CENTER;

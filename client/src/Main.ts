@@ -157,6 +157,10 @@ class Main extends egret.DisplayObjectContainer {
         // game.bind();
         game.start();
 
+          // mock
+        // let ev = new egret.Event('gameStart');
+        // this.stage.dispatchEvent(ev)
+
     }
 
     // url格式:
@@ -211,6 +215,7 @@ class Main extends egret.DisplayObjectContainer {
             this.enterRoom();
             
         }, null);
+      
     }
 
 

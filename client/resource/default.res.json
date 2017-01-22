@@ -1,64 +1,21 @@
 {
 	"groups":[
 	{
-		"keys":"egret_icon_png,basic_png,cat_png,dog_png,hand_png,pre_png,scoreBoard_png,nums_fnt,bgm_mp3",
+		"keys":"egret_icon_png,basic_png,cat_png,dog_png,hand_png,pre_png,scoreBoard_png,nums_fnt,bgm_mp3,talk_box",
 		"name":"preload"
 	}],
 	"resources":[
-	{
-		"name":"basic_png",
-		"type":"sheet",
-		"url":"assets/basic.json"
-	},
-	{
-		"name":"cat_png",
-		"type":"sheet",
-		"url":"assets/cat.json"
-	},
-	{
-		"name":"dog_png",
-		"type":"sheet",
-		"url":"assets/dog.json"
-	},
-	{
-		"name":"egret_icon_png",
-		"type":"image",
-		"url":"assets/egret_icon.png"
-	},
-	{
-		"name":"hand_png",
-		"type":"sheet",
-		"url":"assets/hand.json"
-	},
-	{
-		"name":"pre_png",
-		"type":"sheet",
-		"url":"assets/pre.json"
-	},
-	{
-		"name":"scoreBoard_png",
-		"type":"sheet",
-		"url":"assets/scoreBoard.json"
-	},{
-		"name":"bgm_mp3",
-		"type":"sound",
-		"soundType":"music",
-		"url":"assets/bgm.mp3"
-	},{
-		"name":"lost_wav",
-		"type":"sound",
-		"soundType":"effect",
-		"url":"assets/lost.wav"
-	},{
-		"name":"win_wav",
-		"type":"sound",
-		"soundType":"effect",
-		"url":"assets/win.wav"
-	},
-	{
-		"name":"nums_fnt",
-		"type":"font",
-		"url":"assets/font.fnt"
-	}
+	{"name":"basic_png", "type":"sheet", "url":"assets/basic.json"},
+	{"name":"cat_png", "type":"sheet", "url":"assets/cat.json"},
+	{"name":"dog_png", "type":"sheet", "url":"assets/dog.json"},
+	{"name":"egret_icon_png", "type":"image", "url":"assets/egret_icon.png"},
+	{"name":"hand_png", "type":"sheet", "url":"assets/hand.json"},
+	{"name":"pre_png", "type":"sheet", "url":"assets/pre.json"},
+	{"name":"scoreBoard_png", "type":"sheet", "url":"assets/scoreBoard.json"},
+	{"name":"bgm_mp3", "type":"sound", "soundType":"music", "url":"assets/bgm.mp3"},
+	{"name":"lost_wav", "type":"sound", "soundType":"effect", "url":"assets/lost.wav"},
+	{"name":"win_wav", "type":"sound", "soundType":"effect", "url":"assets/win.wav"},
+	{"name":"nums_fnt", "type":"font", "url":"assets/font.fnt"} ,
+	{"name":"talk_box","scale9grid":"22,0,10,60","type":"image","url":"assets/talk_box.png"}
 	]
 }

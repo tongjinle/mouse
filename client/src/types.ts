@@ -31,6 +31,8 @@ namespace Client {
     }
 
     export enum GameStatus {
+        beforeShowMouse,
+        beforeHoldMouse,
         beforePutMouse,
         beforeRolling,
         rolling,
