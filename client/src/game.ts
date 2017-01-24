@@ -17,6 +17,7 @@ namespace Client {
         public get mouseImg() : egret.Bitmap {
             if(!this._mouseImg){
                 this._mouseImg = new egret.Bitmap(this.sh.getTexture('mouse_png'));
+                this._mouseImg.touchEnabled = true;
                 this.stage.addChild(this._mouseImg);
             }
             
@@ -186,7 +187,7 @@ namespace Client {
 
 
 
-            dict[v]();
+            dict[v] && dict[v]();
         }
 
 
@@ -253,9 +254,49 @@ namespace Client {
 
         bind() {
             let binder = this.binder = new Binder();
+
+
+            // holdMouse
+            binder.watch({
+                beWatched:this.mouseImg,
+                eventname:egret.TouchEvent.TOUCH_BEGIN,
+                handler:(e:egret.TouchEvent)=>{
+                    let mo = this.mouseImg;
+                    console.log('hold mouse');
+                    let hand = this.hand;
+                    hand.toggle(true);
+                    hand.sp.x = this.mouseImg.x + mo.width/2;
+                    hand.sp.y = this.mouseImg.y + mo.height/2;
+
+                    this.status = GameStatus.afterHoldMouse;
+                },
+                context:null,
+                onStatus:GameStatus[GameStatus.beforeHoldMouse],
+                offStatus:Binder.OTHER_STATUS
+            });
+
+            // afterHoldMouse
+            binder.watch({
+                beWatched:this.stage,
+                eventname:egret.TouchEvent.TOUCH_MOVE,
+                handler:(e:egret.TouchEvent)=>{
+                    let hand = this.hand;
+                    hand.sp.x = e.stageX;
+                    hand.sp.y = e.stageY;
+
+                    let mo = this.mouseImg;
+                    mo.x = hand.sp.x -mo.width/2;
+                    mo.y = hand.sp.y -mo.height/2;
+                },
+                context:null,
+                onStatus:GameStatus[GameStatus.afterHoldMouse],
+                offStatus:Binder.OTHER_STATUS
+            });
+            
             this.cupList.forEach((cu, i) => {
                 let sp = cu.cupSp;
                 sp.touchEnabled = true;
+
 
                 // putMouse
                 binder.watch({

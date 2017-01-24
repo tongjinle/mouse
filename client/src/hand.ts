@@ -7,7 +7,7 @@ namespace Client {
         constructor() {
             this.sp = new egret.Sprite();
             this.createAnim();
-            this.createHalo();
+            // this.createHalo();
 
             this.sp.visible =false;
 

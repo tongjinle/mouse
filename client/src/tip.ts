@@ -43,11 +43,12 @@ namespace Client {
             tx.textAlign = egret.HorizontalAlign.CENTER;
             tx.verticalAlign = egret.VerticalAlign.MIDDLE;
 
-            // egret.Tween.get(sp)
-            //     .to({ y:0 },duration)
-            //     .call(() => {
-            //         next();
-            //     });
+            egret.Tween.get(sp)
+                .to({ /*y:0*/ },duration)
+                .call(() => {
+                    sp.visible = false;
+                    next();
+                });
         }
     }
 }

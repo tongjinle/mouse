@@ -9,7 +9,7 @@ namespace Client {
 
 
         SHOW_MOUSE_TIP:'请把我藏起来',
-        SHOW_MOUSE_TIP_DURATION:6000,
+        SHOW_MOUSE_TIP_DURATION:4000,
 
 
         PUT_MOUSE_TIP:'请把老鼠放入一个杯子里',
