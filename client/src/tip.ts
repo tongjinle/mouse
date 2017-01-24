@@ -1,26 +1,53 @@
 namespace Client {
     export class Tip {
-        tx: egret.TextField;
+        sp:egret.Sprite;
+        private tx: egret.TextField;
         private bg:egret.Bitmap;
         constructor() {
+            this.createSp();
+        }
+
+        private createSp(){
+            let sp = this.sp = new egret.Sprite();
+            let texture:egret.Texture = RES.getRes('talkBox_png');
+            window['tt'] = texture;
+            window['sg'] = texture['scale9Grid'];
+            console.log(texture);
+            let bg = this.bg = new egret.Bitmap(texture);
+            bg.scale9Grid = texture['scale9Grid'];
+            bg.width=200;
+ 
             let tx = this.tx = new egret.TextField();
-            tx.textAlign = egret.HorizontalAlign.CENTER;
-            tx.visible = false;
+            tx.size = 38;
+            tx.textColor = 0x000000;
+            tx.x =20;
+            tx.y=25;
+
+            sp.addChild(bg);
+            sp.addChild(tx);
+            sp.height = bg.height;
+            sp.visible = false;
         }
 
         showMsg(msg: string, duration: number, next: () => void) {
+            let sp = this.sp;
+            let bg = this.bg;
             let tx = this.tx;
-            tx.text = msg;
-            tx.size = 38;
-            tx.scaleY = 1;
-            tx.visible = true;
 
-            egret.Tween.get(tx)
-                .to({ scaleY: .1 },duration)
-                .call(() => {
-                    tx.visible = false;
-                    next();
-                });
+            let perLetterWidth = 45;
+            bg.width = perLetterWidth* msg.length;
+            sp.width = bg.width;
+            sp.visible = true;
+
+            tx.text = msg;
+            tx.textAlign = egret.HorizontalAlign.CENTER;
+            tx.verticalAlign = egret.VerticalAlign.MIDDLE;
+
+            // egret.Tween.get(sp)
+            //     .to({ y:0 },duration)
+            //     .call(() => {
+            //         next();
+            //     });
         }
     }
 }

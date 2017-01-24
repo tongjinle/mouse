@@ -52,9 +52,11 @@ namespace Client {
             };
 
             // ********************************************************************************************************************************************
-            // beforePutMouse
+            // beforeHoldMouse
             // ********************************************************************************************************************************************
-            
+            dict[GameStatus.beforeHoldMouse] = ()=>{
+
+            };
 
             // ********************************************************************************************************************************************
             // beforePutMouse
@@ -487,9 +489,15 @@ namespace Client {
         showMouse(next:()=>void) {
             let mo = this.mouseImg;
             mo.visible = true;
-            if (Role.guesser == this.currUser.role) {
+            window['stage']=this.stage
+            mo.x = this.stage.stageWidth /2 - mo.width/2;
+            mo.y = this.stage.stageHeight -550;
+            if (Role.roller == this.currUser.role) {
                 let tip = this.tip;
-                tip.showMsg(CONFIG.GUESS_MOUSE_TIP, CONFIG.GUESS_MOUSE_TIP_DURATION, next);
+                let sp = tip.sp;
+                sp.x = mo.x + mo.width/2;
+                sp.y = mo.y-mo.height-30;
+                tip.showMsg(CONFIG.SHOW_MOUSE_TIP, CONFIG.SHOW_MOUSE_TIP_DURATION, next);
 
             }
         }
@@ -716,12 +724,12 @@ namespace Client {
             let tip = this.tip = new Tip();
 
             let widthRate = .6;
-            let tx = tip.tx;
-            tx.width = this.stage.width * widthRate;
-            tx.x = this.stage.width * (1 - widthRate) / 2;
-            tx.y = this.stage.height / 2 - 200;
+            let tipSp = tip.sp;
+            tipSp.width = this.stage.width * widthRate;
+            tipSp.x = this.stage.width * (1 - widthRate) / 2;
+            tipSp.y = this.stage.height / 2 - 200;
 
-            this.stage.addChild(tx);
+            this.stage.addChild(tipSp);
         }
 
 
