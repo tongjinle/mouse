@@ -71,15 +71,15 @@ namespace Client {
                     this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
                    
                     // 超时没有放置mouse,就会随机在一个cup中放置mouse
-                    this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
-                        if(GameStatus.beforePutMouse!=this.status){
-                            return;
-                        }
-                        if (UserStatus.beforePutMouse == this.roller.status) {
-                            let cupIndex = Math.floor(Math.random() * this.cupList.length);
-                            this.reqPutMouse(this.cupList[cupIndex].index);
-                        }
-                    });
+                    // this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
+                    //     if(GameStatus.beforePutMouse!=this.status){
+                    //         return;
+                    //     }
+                    //     if (UserStatus.beforePutMouse == this.roller.status) {
+                    //         let cupIndex = Math.floor(Math.random() * this.cupList.length);
+                    //         this.reqPutMouse(this.cupList[cupIndex].index);
+                    //     }
+                    // });
                 }else {
                     this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
                     }); 
@@ -204,6 +204,7 @@ namespace Client {
         }
 
         private currCup: Cup;
+        private currAniCup:Cup;
         private currCupPosi: { x: number, y: number };
         private currGuessCupIndex:number;
 
@@ -226,7 +227,8 @@ namespace Client {
 
             this.bind();
 
-
+            window['cupList'] = this.cupList;
+            window['openCup'] = this.openCup;
             
         }
 
@@ -257,6 +259,7 @@ namespace Client {
 
 
             // holdMouse
+            // 点击抓住老鼠
             binder.watch({
                 beWatched:this.mouseImg,
                 eventname:egret.TouchEvent.TOUCH_BEGIN,
@@ -268,7 +271,7 @@ namespace Client {
                     hand.sp.x = this.mouseImg.x + mo.width/2;
                     hand.sp.y = this.mouseImg.y + mo.height/2;
 
-                    this.status = GameStatus.afterHoldMouse;
+                    this.status = GameStatus.beforePutMouse;
                 },
                 context:null,
                 onStatus:GameStatus[GameStatus.beforeHoldMouse],
@@ -276,6 +279,7 @@ namespace Client {
             });
 
             // afterHoldMouse
+            // 抓住老鼠之后,移动老鼠
             binder.watch({
                 beWatched:this.stage,
                 eventname:egret.TouchEvent.TOUCH_MOVE,
@@ -289,7 +293,29 @@ namespace Client {
                     mo.y = hand.sp.y -mo.height/2;
                 },
                 context:null,
-                onStatus:GameStatus[GameStatus.afterHoldMouse],
+                onStatus:GameStatus[GameStatus.beforePutMouse],
+                offStatus:Binder.OTHER_STATUS
+            });
+
+            // 如果撞到杯子,则把老鼠丢进去
+            binder.watch({
+                beWatched:this.stage,
+                eventname:egret.TouchEvent.TOUCH_END,
+                handler: (e: egret.TouchEvent) => {
+                    let cu = this.getCupByPosi({ x: e.stageX, y: e.stageY });
+                    console.log('cu:',cu);
+                    let currAniCup = this.currAniCup;
+                    if (cu) {
+                        this.reqPutMouse(cu.index);
+                        // this.status = GameStatus.beforeRolling
+
+                        // this.openCup(cu,()=>{
+                        //         // this.mouseImg.visible=false;
+                        // });                       
+                    }
+                },
+                context:null,
+                onStatus:GameStatus[GameStatus.beforePutMouse],
                 offStatus:Binder.OTHER_STATUS
             });
             
@@ -297,22 +323,21 @@ namespace Client {
                 let sp = cu.cupSp;
                 sp.touchEnabled = true;
 
-
                 // putMouse
-                binder.watch({
-                    beWatched: sp,
-                    eventname: egret.TouchEvent.TOUCH_BEGIN,
-                    handler: (e: egret.TouchEvent) => {
-                        if (this.currUser != this.roller || UserStatus.beforePutMouse != this.roller.status) {
-                            return;
-                        }
-                        this.reqPutMouse(cu.index);
-                        // this.status = GameStatus.beforeRolling
-                    },
-                    context: this,
-                    onStatus: GameStatus[GameStatus.beforePutMouse],
-                    offStatus: Binder.OTHER_STATUS
-                });
+                // binder.watch({
+                //     beWatched: sp,
+                //     eventname: egret.TouchEvent.TOUCH_BEGIN,
+                //     handler: (e: egret.TouchEvent) => {
+                //         if (this.currUser != this.roller || UserStatus.beforePutMouse != this.roller.status) {
+                //             return;
+                //         }
+                //         this.reqPutMouse(cu.index);
+                //         // this.status = GameStatus.beforeRolling
+                //     },
+                //     context: this,
+                //     onStatus: GameStatus[GameStatus.beforePutMouse],
+                //     offStatus: Binder.OTHER_STATUS
+                // });
 
                 // guessMouse
                 binder.watch({
@@ -555,9 +580,72 @@ namespace Client {
 
         }
 
+        // 打开杯子
+        openAni:AniMgr;
+        openCup(cup:Cup,next:()=>void){
+            
+            let frames:egret.Texture[] = [];
+            let sh:egret.SpriteSheet = RES.getRes("cupAni_png");
+            for(let i=1;i<=10;i++){
+                let te = `open_${i<10?'0'+i:i}_png`;
+                frames.push(sh.getTexture(te));
+            }
+            frames = frames.concat(frames.slice(0).reverse());
+            let delay = CONFIG.OPEN_CUP_SPEED;
+            if(!this.openAni){
+                this.openAni = new AniMgr(frames,delay,()=>{
+                    ani.img.visible = false;
+                    cup.cupSp.visible = true;
+                    next();
+                });
+                this.stage.addChild(this.openAni.img);
+            }
+
+            let ani = this.openAni;
+            ani.img.visible = true;
+            cup.cupSp.visible = false;
+            console.log('***',ani.img.width,ani.img.height);
+            ani.img.x = cup.cupSp.x + cup.cupSp.width/2 - ani.img.width/2;
+            ani.img.y = cup.cupSp.y+cup.cupSp.height-ani.img.height;
+
+            ani.start();
+        }
+
+        // 关闭杯子
+        unOpenCup(cup:Cup,next:()=>void){
+            let frames:egret.Texture[] = [];
+            let sh:egret.SpriteSheet = RES.getRes("cupAni_png");
+            for(let i=1;i<=10;i++){
+                frames.push(sh.getTexture(`open_${i<10?'0'+i:i}_png`));
+            }
+            frames = frames.reverse();
+            let delay =  CONFIG.OPEN_CUP_SPEED;
+            let ani = new AniMgr(frames,delay,()=>{
+                ani.img.visible = false;
+                cup.cupSp.visible = true;
+                next();
+            });
+
+            this.stage.addChild(ani.img);
+            ani.img.x = cup.cupSp.x;
+            ani.img.y = cup.cupSp .y;
+
+            ani.start();
+        }
+
 
         // 放置老鼠
         putMouse(cup: Cup) {
+            this.openCup(cup, () => {
+                this.mouseImg.alpha = 0;
+                cup.putMouse();
+                cup.showMouse();
+                if (Role.guesser == this.currUser.role) {
+                    cup.fadeoutMouse();
+                }
+            });
+
+            if(1){return;}
 
             // guess log
             if (Role.guesser == this.currUser.role) {
@@ -634,7 +722,7 @@ namespace Client {
                 let cux2 = cux + cu.cupSp.width;
                 let cuy2 = cuy + cu.cupSp.height;
                 // console.log(cu.index, { x, y, cux, cuy, cux2, cuy2 });
-                return cux <= x && x <= cux2 && cuy <= y && y <= cuy2 && cu.hasMouse;
+                return cux <= x && x <= cux2 && cuy <= y && y <= cuy2;
             });
         }
 

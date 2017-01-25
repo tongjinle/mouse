@@ -29,7 +29,6 @@ namespace Client {
                 let {isBind, beWatched, eventname, handler, context, onStatus, offStatus} = param;
 
                 if (status == onStatus && !isBind) {
-                    console.log(handler+'');
                     beWatched.addEventListener(eventname, handler, context);
                     param.isBind = true;
 

@@ -1,7 +1,7 @@
 {
 	"groups":[
 	{
-		"keys":"egret_icon_png,basic_png,cat_png,dog_png,hand_png,pre_png,scoreBoard_png,nums_fnt,bgm_mp3,talkBox_png",
+		"keys":"egret_icon_png,basic_png,cat_png,dog_png,hand_png,pre_png,scoreBoard_png,nums_fnt,bgm_mp3,talkBox_png,cupAni_png",
 		"name":"preload"
 	}],
 	"resources":[
@@ -16,6 +16,7 @@
 	{"name":"lost_wav", "type":"sound", "soundType":"effect", "url":"assets/lost.wav"},
 	{"name":"win_wav", "type":"sound", "soundType":"effect", "url":"assets/win.wav"},
 	{"name":"nums_fnt", "type":"font", "url":"assets/font.fnt"} ,
+	{"name":"cupAni_png", "type":"sheet", "url":"assets/cupAni.json"},
 	{"name":"talkBox_png","scale9grid":"60,0,10,103","type":"image","url":"assets/talk_box.png"}
 	]
 }

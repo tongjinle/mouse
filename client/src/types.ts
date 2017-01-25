@@ -34,6 +34,10 @@ namespace Client {
         beforeShowMouse,
         beforeHoldMouse,
         afterHoldMouse,
+        
+        openingCup,
+        afterOpenCup,
+
         beforePutMouse,
         beforeRolling,
         rolling,

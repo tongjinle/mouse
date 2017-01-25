@@ -2,6 +2,9 @@ namespace Client {
     export let CONFIG = {
         SOCKET_URI:'http://localhost:8080',
 
+
+        OPEN_CUP_SPEED: 80,
+
         PUT_MOUSE_DURATION:4,
         ROLL_DURATION: 8,
         GUESS_DURATION:5,
