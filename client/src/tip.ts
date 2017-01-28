@@ -10,9 +10,7 @@ namespace Client {
         private createSp(){
             let sp = this.sp = new egret.Sprite();
             let texture:egret.Texture = RES.getRes('talkBox_png');
-            window['tt'] = texture;
-            window['sg'] = texture['scale9Grid'];
-            console.log(texture);
+           
             let bg = this.bg = new egret.Bitmap(texture);
             bg.scale9Grid = texture['scale9Grid'];
             bg.width=200;

@@ -46,18 +46,18 @@ namespace Client {
             // ********************************************************************************************************************************************
             // beforeShowMouse
             // ********************************************************************************************************************************************
-            dict[GameStatus.beforeShowMouse] = ()=>{
-                this.showMouse(()=>{
-                    this.status = GameStatus.beforeHoldMouse;
-                });
-            };
+            // dict[GameStatus.beforeShowMouse] = ()=>{
+            //     this.showMouse(()=>{
+            //         this.status = GameStatus.beforeHoldMouse;
+            //     });
+            // };
 
             // ********************************************************************************************************************************************
             // beforeHoldMouse
             // ********************************************************************************************************************************************
-            dict[GameStatus.beforeHoldMouse] = ()=>{
+            // dict[GameStatus.beforeHoldMouse] = ()=>{
 
-            };
+            // };
 
             // ********************************************************************************************************************************************
             // beforePutMouse
@@ -66,20 +66,22 @@ namespace Client {
                 this.roller.status = UserStatus.beforePutMouse;
                 this.guesser.status = UserStatus.beforeWatching;
 
+                this.showMouse(()=>{});
+
                 if (this.currUser.role == Role.roller) {
                     // show tips
                     this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
                    
                     // 超时没有放置mouse,就会随机在一个cup中放置mouse
-                    // this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
-                    //     if(GameStatus.beforePutMouse!=this.status){
-                    //         return;
-                    //     }
-                    //     if (UserStatus.beforePutMouse == this.roller.status) {
-                    //         let cupIndex = Math.floor(Math.random() * this.cupList.length);
-                    //         this.reqPutMouse(this.cupList[cupIndex].index);
-                    //     }
-                    // });
+                    this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
+                        if(GameStatus.beforePutMouse!=this.status){
+                            return;
+                        }
+                        if (UserStatus.beforePutMouse == this.roller.status) {
+                            let cupIndex = Math.floor(Math.random() * this.cupList.length);
+                            this.reqPutMouse(this.cupList[cupIndex].index);
+                        }
+                    });
                 }else {
                     this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
                     }); 
@@ -264,17 +266,14 @@ namespace Client {
                 beWatched:this.mouseImg,
                 eventname:egret.TouchEvent.TOUCH_BEGIN,
                 handler:(e:egret.TouchEvent)=>{
-                    let mo = this.mouseImg;
-                    console.log('hold mouse');
-                    let hand = this.hand;
-                    hand.toggle(true);
-                    hand.sp.x = this.mouseImg.x + mo.width/2;
-                    hand.sp.y = this.mouseImg.y + mo.height/2;
 
-                    this.status = GameStatus.beforePutMouse;
+                    this.reqNotify('holdMouse',undefined);
+                    
+
+                    // this.status = GameStatus.beforePutMouse;
                 },
                 context:null,
-                onStatus:GameStatus[GameStatus.beforeHoldMouse],
+                onStatus:GameStatus[GameStatus.beforePutMouse],
                 offStatus:Binder.OTHER_STATUS
             });
 
@@ -284,13 +283,7 @@ namespace Client {
                 beWatched:this.stage,
                 eventname:egret.TouchEvent.TOUCH_MOVE,
                 handler:(e:egret.TouchEvent)=>{
-                    let hand = this.hand;
-                    hand.sp.x = e.stageX;
-                    hand.sp.y = e.stageY;
-
-                    let mo = this.mouseImg;
-                    mo.x = hand.sp.x -mo.width/2;
-                    mo.y = hand.sp.y -mo.height/2;
+                    this.reqNotify('moveHoldMouse',{x:e.stageX,y:e.stageY});
                 },
                 context:null,
                 onStatus:GameStatus[GameStatus.beforePutMouse],
@@ -303,9 +296,9 @@ namespace Client {
                 eventname:egret.TouchEvent.TOUCH_END,
                 handler: (e: egret.TouchEvent) => {
                     let cu = this.getCupByPosi({ x: e.stageX, y: e.stageY });
-                    console.log('cu:',cu);
                     let currAniCup = this.currAniCup;
                     if (cu) {
+                        console.log('cu:',cu);
                         this.reqPutMouse(cu.index);
                         // this.status = GameStatus.beforeRolling
 
@@ -441,6 +434,18 @@ namespace Client {
         createSocket(so: SocketIOClient.Socket) {
             this.so = so;
 
+            // 绑定notify
+            so.on('onnotify',(data:{type:string,data:any})=>{
+                let type = data.type;
+                let notifyData = data.data;
+                if('holdMouse'==type){
+                    this.holdMouse();
+                }else if('moveHoldMouse'==type){
+                    let {x,y} = notifyData as {x:number,y:number};
+                    this.moveMouse(x,y);
+                }
+            });
+
             // 绑定putmouse
             so.on('onputMouse', (data: { flag: boolean, cupIndex: number }) => {
                 let {flag, cupIndex} = data;
@@ -505,7 +510,8 @@ namespace Client {
 
 
         start() {
-            this.status = GameStatus.beforeShowMouse;
+            // this.status = GameStatus.beforeShowMouse;
+            this.status = GameStatus.beforePutMouse;
             // this.showRst(true);
             // this.playAudio('bgm_mp3','bgm');
         }
@@ -542,7 +548,8 @@ namespace Client {
         }
 
         reqNotify(type:string,data:any){
-            this.so.emit('notify')
+            console.log('notify:',type,data);
+            this.so.emit('notify',{type,data});
         }
 
 
@@ -554,8 +561,8 @@ namespace Client {
         // 老鼠要说,请把我藏起来(guess不用显示文字)
         showMouse(next:()=>void) {
             let mo = this.mouseImg;
+            mo.alpha=1;    
             mo.visible = true;
-            window['stage']=this.stage
             mo.x = this.stage.stageWidth /2 - mo.width/2;
             mo.y = this.stage.stageHeight -550;
             if (Role.roller == this.currUser.role) {
@@ -571,13 +578,24 @@ namespace Client {
 
         // 抓起老鼠(或者叫握住老鼠)
         holdMouse(){
-
+            let mo = this.mouseImg;
+            console.log('hold mouse');
+            let hand = this.hand;
+            hand.toggle(true);
+            hand.sp.x = this.mouseImg.x + mo.width/2;
+            hand.sp.y = this.mouseImg.y + mo.height/2;
         }
 
         // 移动抓起的老鼠,遇到杯子,杯子抬起来的动画
         // 已经抬起来的杯子,应该立刻放下
-        moveMouse(){
+        moveMouse(x:number,y:number){
+            let hand = this.hand;
+            hand.sp.x = x;
+            hand.sp.y = y;
 
+            let mo = this.mouseImg;
+            mo.x = hand.sp.x -mo.width/2;
+            mo.y = hand.sp.y -mo.height/2;
         }
 
         // 打开杯子
@@ -604,7 +622,6 @@ namespace Client {
             let ani = this.openAni;
             ani.img.visible = true;
             cup.cupSp.visible = false;
-            console.log('***',ani.img.width,ani.img.height);
             ani.img.x = cup.cupSp.x + cup.cupSp.width/2 - ani.img.width/2;
             ani.img.y = cup.cupSp.y+cup.cupSp.height-ani.img.height;
 
@@ -889,7 +906,7 @@ namespace Client {
                 sp.x = margin + (sp.width + margin) * i;
                 sp.y = this.stage.height / 2 - 120;
                 sp.alpha = 1;
-                cu.setShadowOpacity((cupCount - i) / cupCount);
+                // cu.setShadowOpacity((cupCount - i) / cupCount);
                 cu.fadeoutMouse();
             }
         }

@@ -34,19 +34,19 @@ namespace Client{
             cupSp.width = cupImg.width;
             cupSp.height = cupImg.height;
 
-            let shadowImg  = this.shadowImg = new egret.Bitmap(sh.getTexture('cup_shadow_png'));
-            shadowImg.x =cupSp.width/2 ;
-            shadowImg.y =cupSp.height- 100;
-            cupSp.addChild(shadowImg);
+            // let shadowImg  = this.shadowImg = new egret.Bitmap(sh.getTexture('cup_shadow_png'));
+            // shadowImg.x =cupSp.width/2 ;
+            // shadowImg.y =cupSp.height- 100;
+            // cupSp.addChild(shadowImg);
 
             cupSp.setChildIndex(cupImg,cupSp.numChildren-1);
 
         }
 
 
-        setShadowOpacity(opacity:number){
-            this.shadowImg.alpha = opacity;
-        }
+        // setShadowOpacity(opacity:number){
+        //     this.shadowImg.alpha = opacity;
+        // }
 
         putMouse(){
             this.hasMouse = true;
