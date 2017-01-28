@@ -26,7 +26,7 @@ class App {
 
     // 游戏实例列表
     gameList: Game[];
-    constructor() {
+    constructor(port:number) {
         this.gameList = [];
         this.dict = {};
 
@@ -34,7 +34,7 @@ class App {
         let io = SocketIO(app);
 
 
-        app.listen(3000, () => {
+        app.listen(port, () => {
             console.log('..............');
             console.log('..............');
             console.log('..............');
@@ -132,6 +132,14 @@ class App {
                     // 广播"游戏开始"
                     io.to(gameId).emit(PushType.ongameStart, { userList });
                 }
+            });
+
+            // notify
+            so.on('notify',(data:{type:string,data:any})=>{
+                let ga = this.getGame(so.id);
+                let gameId = ga.id;
+                io.to(gameId).emit('onnotify',data);
+
             });
 
             so.on(RequestType.putMouse, (data: PutMouseData) => {
@@ -253,7 +261,7 @@ class App {
 
 
 
-let app = new App();
+let app = new App(CONFIG.port);
 
 
 
