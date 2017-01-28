@@ -22,7 +22,7 @@ namespace Client {
         ROLL_TIP_DURATION:2000,
 
         GUESS_MOUSE_TIP:'猜老鼠在哪个杯子',
-        GUESS_MOUSE_TIP_DURATION:2000,
+        GUESS_MOUSE_TIP_DURATION:100000,
         
         REST_DURATION:4000
 

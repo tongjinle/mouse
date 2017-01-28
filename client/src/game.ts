@@ -155,7 +155,8 @@ namespace Client {
 
                  if(Role.guesser == this.currUser.role){
                     this.tip.showMsg(CONFIG.GUESS_MOUSE_TIP,CONFIG.GUESS_MOUSE_TIP_DURATION,()=>{});
-                     
+                    this.tip.sp.x = this.stage.stageWidth/2;
+                    this.tip.sp.y = 720; 
                  }
 
             };
