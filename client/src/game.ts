@@ -70,7 +70,7 @@ namespace Client {
 
                 if (this.currUser.role == Role.roller) {
                     // show tips
-                    this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
+                    // this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
                    
                     // 超时没有放置mouse,就会随机在一个cup中放置mouse
                     this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
@@ -79,7 +79,20 @@ namespace Client {
                         }
                         if (UserStatus.beforePutMouse == this.roller.status) {
                             let cupIndex = Math.floor(Math.random() * this.cupList.length);
-                            this.reqPutMouse(this.cupList[cupIndex].index);
+                            let cu = this.cupList[cupIndex];
+                            let x = cu.cupSp.x+cu.cupSp.width/2-this.mouseImg.width/2;
+                            let y = cu.cupSp.y+cu.cupSp.height/2-this.mouseImg.height/2;
+
+                            this.hand.toggle(true);
+                            egret.Tween.get(this.mouseImg,{onChange:()=>{
+                                this.hand.sp.x = this.mouseImg.x + this.mouseImg.width/2;
+                                this.hand.sp.y = this.mouseImg.y + this.mouseImg.height/2;
+                            },onChangeObj:this})
+                                .to({x,y},800)
+                                .call(()=>{
+                                    this.reqPutMouse(this.cupList[cupIndex].index);
+
+                                });
                         }
                     });
                 }else {
@@ -106,6 +119,9 @@ namespace Client {
                 if (this.roller == this.currUser) {
                     this.tip.showMsg(CONFIG.ROLL_TIP, CONFIG.ROLL_TIP_DURATION, () => { });
                 }
+
+                // hand的显示
+                this.hand.sp.visible = Role.roller == this.currUser.role;
                 
 
                 this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
@@ -229,8 +245,7 @@ namespace Client {
 
             this.bind();
 
-            window['cupList'] = this.cupList;
-            window['openCup'] = this.openCup;
+           
             
         }
 
@@ -268,7 +283,7 @@ namespace Client {
                 handler:(e:egret.TouchEvent)=>{
 
                     this.reqNotify('holdMouse',undefined);
-                    
+                    this.tip.hide();
 
                     // this.status = GameStatus.beforePutMouse;
                 },
@@ -284,33 +299,41 @@ namespace Client {
                 eventname:egret.TouchEvent.TOUCH_MOVE,
                 handler:(e:egret.TouchEvent)=>{
                     this.reqNotify('moveHoldMouse',{x:e.stageX,y:e.stageY});
-                },
-                context:null,
-                onStatus:GameStatus[GameStatus.beforePutMouse],
-                offStatus:Binder.OTHER_STATUS
-            });
 
-            // 如果撞到杯子,则把老鼠丢进去
-            binder.watch({
-                beWatched:this.stage,
-                eventname:egret.TouchEvent.TOUCH_END,
-                handler: (e: egret.TouchEvent) => {
+                    // 如果撞到杯子,则把老鼠丢进去
                     let cu = this.getCupByPosi({ x: e.stageX, y: e.stageY });
                     let currAniCup = this.currAniCup;
                     if (cu) {
                         console.log('cu:',cu);
                         this.reqPutMouse(cu.index);
-                        // this.status = GameStatus.beforeRolling
-
-                        // this.openCup(cu,()=>{
-                        //         // this.mouseImg.visible=false;
-                        // });                       
+                                            
                     }
                 },
                 context:null,
                 onStatus:GameStatus[GameStatus.beforePutMouse],
                 offStatus:Binder.OTHER_STATUS
             });
+
+            // binder.watch({
+            //     beWatched:this.stage,
+            //     eventname:egret.TouchEvent.TOUCH_END,
+            //     handler: (e: egret.TouchEvent) => {
+            //         let cu = this.getCupByPosi({ x: e.stageX, y: e.stageY });
+            //         let currAniCup = this.currAniCup;
+            //         if (cu) {
+            //             console.log('cu:',cu);
+            //             this.reqPutMouse(cu.index);
+            //             // this.status = GameStatus.beforeRolling
+
+            //             // this.openCup(cu,()=>{
+            //             //         // this.mouseImg.visible=false;
+            //             // });                       
+            //         }
+            //     },
+            //     context:null,
+            //     onStatus:GameStatus[GameStatus.beforePutMouse],
+            //     offStatus:Binder.OTHER_STATUS
+            // });
             
             this.cupList.forEach((cu, i) => {
                 let sp = cu.cupSp;
@@ -450,9 +473,11 @@ namespace Client {
             so.on('onputMouse', (data: { flag: boolean, cupIndex: number }) => {
                 let {flag, cupIndex} = data;
                 if (flag) {
-                    this.putMouse(this.cupList[cupIndex]);
+                    this.putMouse(this.cupList[cupIndex],()=>{
+                        this.status = GameStatus.beforeRolling;
+                        
+                    });
                     this.currHub.clearTimer();
-                    this.status = GameStatus.beforeRolling;
 
                 }
 
@@ -652,7 +677,7 @@ namespace Client {
 
 
         // 放置老鼠
-        putMouse(cup: Cup) {
+        putMouse(cup: Cup,next:()=>void) {
             this.openCup(cup, () => {
                 this.mouseImg.alpha = 0;
                 cup.putMouse();
@@ -660,6 +685,7 @@ namespace Client {
                 if (Role.guesser == this.currUser.role) {
                     cup.fadeoutMouse();
                 }
+                next();
             });
 
             if(1){return;}

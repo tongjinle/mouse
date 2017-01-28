@@ -29,6 +29,8 @@ namespace Client {
 
         showMsg(msg: string, duration: number, next: () => void) {
             let sp = this.sp;
+            sp.visible = true;
+
             let bg = this.bg;
             let tx = this.tx;
 
@@ -47,6 +49,10 @@ namespace Client {
                     sp.visible = false;
                     next();
                 });
+        }
+
+        hide(){
+            this.sp.visible = false;
         }
     }
 }

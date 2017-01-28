@@ -18,7 +18,7 @@ namespace Client {
         PUT_MOUSE_TIP:'请把老鼠放入一个杯子里',
         PUT_MOUSE_TIP_DURATION:8000,
 
-        ROLL_TIP:'请把老鼠放入一个杯子里',
+        ROLL_TIP:'请摇晃杯子',
         ROLL_TIP_DURATION:2000,
 
         GUESS_MOUSE_TIP:'猜老鼠在哪个杯子',
