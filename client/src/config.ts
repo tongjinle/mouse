@@ -5,8 +5,8 @@ namespace Client {
         // "打开cup藏入老鼠"每一帧的间隔
         OPEN_CUP_SPEED: 80,
 
-        PUT_MOUSE_DURATION:8,
-        ROLL_DURATION: 8,
+        PUT_MOUSE_DURATION:2,
+        ROLL_DURATION: 2,
         GUESS_DURATION:5,
 
 

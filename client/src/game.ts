@@ -62,6 +62,7 @@ namespace Client {
             // ********************************************************************************************************************************************
             // beforePutMouse
             // ********************************************************************************************************************************************
+       
             dict[GameStatus.beforePutMouse] = () => {
                 this.roller.status = UserStatus.beforePutMouse;
                 this.guesser.status = UserStatus.beforeWatching;
@@ -73,12 +74,21 @@ namespace Client {
                     // this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
                    
                     // 超时没有放置mouse,就会随机在一个cup中放置mouse
+                    // mock
+
                     this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
                         if(GameStatus.beforePutMouse!=this.status){
                             return;
                         }
                         if (UserStatus.beforePutMouse == this.roller.status) {
                             let cupIndex = Math.floor(Math.random() * this.cupList.length);
+                            // test 
+                            // if(this.currUser.animal==Animal.cat){
+                            //     cupIndex=0;
+                            // }else{
+                            //     cupIndex=2;
+                            // }
+                            
                             let cu = this.cupList[cupIndex];
                             let x = cu.cupSp.x+cu.cupSp.width/2-this.mouseImg.width/2;
                             let y = cu.cupSp.y+cu.cupSp.height/2-this.mouseImg.height/2;
@@ -473,6 +483,7 @@ namespace Client {
             so.on('onputMouse', (data: { flag: boolean, cupIndex: number }) => {
                 let {flag, cupIndex} = data;
                 if (flag) {
+                    console.log(this.cupList[cupIndex].index,cupIndex);
                     this.putMouse(this.cupList[cupIndex],()=>{
                         this.status = GameStatus.beforeRolling;
                         
@@ -626,7 +637,10 @@ namespace Client {
         // 打开杯子
         openAni:AniMgr;
         openCup(cup:Cup,next:()=>void){
-            
+            this.currCup = cup;
+            console.group('openCup');
+            console.log(cup.index);
+            console.groupEnd();
             let frames:egret.Texture[] = [];
             let sh:egret.SpriteSheet = RES.getRes("cupAni_png");
             for(let i=1;i<=10;i++){
@@ -638,7 +652,7 @@ namespace Client {
             if(!this.openAni){
                 this.openAni = new AniMgr(frames,delay,()=>{
                     ani.img.visible = false;
-                    cup.cupSp.visible = true;
+                    this.currCup.cupSp.visible = true;
                     next();
                 });
                 this.stage.addChild(this.openAni.img);
@@ -678,9 +692,15 @@ namespace Client {
 
         // 放置老鼠
         putMouse(cup: Cup,next:()=>void) {
+            this.currCup =cup;
+            console.log(cup.index);
             this.openCup(cup, () => {
+                let cup = this.currCup;
                 this.mouseImg.alpha = 0;
                 cup.putMouse();
+                console.group('putMouse');
+                console.log(cup.index);
+                console.groupEnd();    
                 cup.showMouse();
                 if (Role.guesser == this.currUser.role) {
                     cup.fadeoutMouse();

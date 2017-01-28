@@ -86,10 +86,12 @@ namespace Client {
                 let tx = new egret.TextField();
                 // tx.fontFamily = RES.getRes('nums');
                 tx.text = '10';
-                tx.x = this.sp.width - 150;
-                tx.y = 40;
+                tx.x = 645;
+                tx.y = 105;
                 tx.width = 145;
                 tx.height = 120;
+                tx.anchorOffsetX = tx.width*.5;
+                tx.anchorOffsetY = tx.height*.5;
                 tx.size = 80;
                 // tx.scaleX = tx.scaleY = 5;
                 tx.textAlign = egret.HorizontalAlign.CENTER;
@@ -113,9 +115,21 @@ namespace Client {
         runTimer(duration: number, next: () => void) {
             console.log('...timer...');
 
+           
+
+
             this.ti = new egret.Timer(1000, duration);
-            let timerHandle = () => { this.timer.text = (parseInt(this.timer.text) - 1).toString(); };
-            let timerCompeleteHandle = () => { next(); };
+            let timerHandle = () => {
+                let tx = this.timer;
+                tx.text = (parseInt(tx.text) - 1).toString();
+
+                // 心跳动画
+                egret.Tween.get(this.timer)
+                    .to({scaleX:1.2,scaleY:1.2},500,egret.Ease.bounceInOut)
+                    .to({scaleX:1,scaleY:1},500,egret.Ease.bounceInOut)
+
+            };
+            let timerCompeleteHandle = () => {next(); };
             this.ti.addEventListener(egret.TimerEvent.TIMER, timerHandle, this);
             this.ti.addEventListener(egret.TimerEvent.TIMER_COMPLETE, timerCompeleteHandle, this);
 
@@ -124,6 +138,8 @@ namespace Client {
 
             this.timer.text = duration.toString();
             this.ti.start();
+
+            
 
         }
 
