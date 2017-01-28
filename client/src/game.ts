@@ -128,6 +128,8 @@ namespace Client {
                 // 提示
                 if (this.roller == this.currUser) {
                     this.tip.showMsg(CONFIG.ROLL_TIP, CONFIG.ROLL_TIP_DURATION, () => { });
+                    this.tip.sp.x = this.currCup.cupSp.x + this.currCup.cupSp.width/2;
+                    this.tip.sp.y = this.currCup.cupSp.y - this.tip.sp.height;
                 }
 
                 // hand的显示
