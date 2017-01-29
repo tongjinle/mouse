@@ -10,7 +10,7 @@ namespace Client {
         OPEN_CUP_SPEED: 80,
 
         PUT_MOUSE_DURATION:8,
-        ROLL_DURATION: 2,
+        ROLL_DURATION: 6,
         GUESS_DURATION:5,
 
 
