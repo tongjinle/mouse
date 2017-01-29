@@ -2,6 +2,10 @@ namespace Client {
     export let CONFIG = {
         SOCKET_URI:'http://localhost:8080',
 
+
+        // 最大局数
+        maxCount:3,
+
         // "打开cup藏入老鼠"每一帧的间隔
         OPEN_CUP_SPEED: 80,
 
@@ -22,7 +26,7 @@ namespace Client {
         ROLL_TIP_DURATION:2000,
 
         GUESS_MOUSE_TIP:'猜老鼠在哪个杯子',
-        GUESS_MOUSE_TIP_DURATION:100000,
+        GUESS_MOUSE_TIP_DURATION:4000,
         
         REST_DURATION:4000
 

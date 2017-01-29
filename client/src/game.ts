@@ -12,6 +12,9 @@ namespace Client {
 
         isCorrect :boolean;
 
+        
+        scoreList:number[];
+
 
         private _mouseImg : egret.Bitmap;
         public get mouseImg() : egret.Bitmap {
@@ -177,7 +180,21 @@ namespace Client {
                 this.guesser.status = UserStatus.afterGuess;
                 
 
+                this.userList.forEach((us, i, list) => {
+                    if ((us == this.roller && this.roller.isRoundWin)||(us == this.guesser && this.guesser.isRoundWin)) {
+                        this.scoreList[i]++;
+                    }
+                    
+                });
+
+                // 判断是不是已经结束
+                if (!!_.find(this.scoreList, (so) => { return so == (CONFIG.maxCount + 1) / 2; })) {
+                    return;
+                }
+               
+
                 setTimeout(()=>{
+                    
                     this.status = GameStatus.roundEnd;
                 },CONFIG.REST_DURATION);
             };
@@ -185,6 +202,7 @@ namespace Client {
             let reRoundHandler;
             dict[GameStatus.roundEnd]=()=>{
                 console.log('round end');
+               
                 // cupList
                 this.resetCup();
 
@@ -249,6 +267,13 @@ namespace Client {
             this.sh = RES.getRes('basic_png');
 
             this.userList = userList;
+            
+            // 初始化比分
+            this.scoreList = [];
+            this.userList.forEach(()=>{
+                this.scoreList.push(0);
+            });
+
             this.cupList = [];
             this.hubList = [];
 
