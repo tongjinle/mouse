@@ -319,7 +319,9 @@ namespace Client {
                 beWatched:this.mouseImg,
                 eventname:egret.TouchEvent.TOUCH_BEGIN,
                 handler:(e:egret.TouchEvent)=>{
-
+                    if(Role.roller !== this.currUser.role){
+                        return;
+                    }
                     this.reqNotify('holdMouse',undefined);
                     this.tip.hide();
 
@@ -336,6 +338,9 @@ namespace Client {
                 beWatched:this.stage,
                 eventname:egret.TouchEvent.TOUCH_MOVE,
                 handler:(e:egret.TouchEvent)=>{
+                    if(Role.roller !== this.currUser.role){
+                        return;
+                    }
                     this.reqNotify('moveHoldMouse',{x:e.stageX,y:e.stageY});
 
                     // 如果撞到杯子,则把老鼠丢进去
