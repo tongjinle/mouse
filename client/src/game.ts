@@ -193,12 +193,27 @@ namespace Client {
                 this.guesser.status = UserStatus.afterWatching;
 
 
+
                  if(Role.guesser == this.currUser.role){
                     this.tip.showMsg(CONFIG.GUESS_MOUSE_TIP,CONFIG.GUESS_MOUSE_TIP_DURATION,()=>{});
                     this.tip.sp.x = this.stage.stageWidth/2;
                     this.tip.sp.y = 720; 
                  }
 
+                this.currHub.runTimer(CONFIG.GUESS_DURATION, () => {
+                    if(Role.guesser == this.currUser.role ){
+                        if(GameStatus.afterRolling!=this.status){
+                            return ;
+                        }
+                        
+                        this.status=GameStatus.userHolding;
+                        let cupIndex = Math.floor(Math.random() * this.cupList.length);
+                        let cu = this.cupList[cupIndex];
+
+                        this.reqGuess(cu.index);
+                        
+                    }
+                });
             };
 
             // ********************************************************************************************************************************************
@@ -258,7 +273,7 @@ namespace Client {
                     us.resetRole(us.role);
                 });
 
-                let reRoundHandler = setTimeout(()=>{
+                reRoundHandler = setTimeout(()=>{
                     this.status = GameStatus.beforePutMouse;
                     reRoundHandler = undefined;
                 },500);
@@ -448,7 +463,6 @@ namespace Client {
                         }
                         this.currGuessCupIndex = cu.index;
                         this.reqGuess(cu.index);
-                        // this.status = GameStatus.afterGuess;
                     },
                     context:this,
                     onStatus:GameStatus[GameStatus.afterRolling],
@@ -589,16 +603,14 @@ namespace Client {
                 let {cupIndex,isCorrect} = data;
                 this.isCorrect = isCorrect;
                 this.guessMouse(cupIndex, isCorrect, () => {
-                    setTimeout(()=>{
-                        this.status = GameStatus.afterGuess;
-                    },2000);
+                    this.status = GameStatus.afterGuess;
                 });
             });
 
 
             so.on('onpublishScore', (data: { userIdList: string[], result: number[] }) => {
                 let t = setInterval(()=>{
-                    if(this.status = GameStatus.afterGuess){
+                    if(this.status == GameStatus.afterGuess){
                         clearInterval(t);
 
                         let {userIdList, result} = data;
@@ -659,7 +671,11 @@ namespace Client {
         }
 
         reqGuess(cupIndex:number) {
+            if(this.status == GameStatus.guessing){
+                return;
+            }
             this.so.emit('guess', { cupIndex});
+            this.status = GameStatus.guessing;
         }
 
         reqNotify(type:string,data:any){
