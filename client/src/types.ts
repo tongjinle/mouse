@@ -44,6 +44,7 @@ namespace Client {
         beforeRolling,
         rolling,
         afterRolling,
+        guessing,
         afterGuess,
         roundEnd,
         gameEnd
