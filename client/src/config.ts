@@ -28,7 +28,10 @@ namespace Client {
         GUESS_MOUSE_TIP:'猜老鼠在哪个杯子',
         GUESS_MOUSE_TIP_DURATION:4000,
         
-        REST_DURATION:4000
+        REST_DURATION:4000,
+        
+        // 游戏结束画面出现之前的等待时间
+        GAMEOVER_DURATION:3000
 
 
     }

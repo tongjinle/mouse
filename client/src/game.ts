@@ -589,23 +589,32 @@ namespace Client {
                 let {cupIndex,isCorrect} = data;
                 this.isCorrect = isCorrect;
                 this.guessMouse(cupIndex, isCorrect, () => {
-                    this.status = GameStatus.afterGuess;
+                    setTimeout(()=>{
+                        this.status = GameStatus.afterGuess;
+                    },2000);
                 });
             });
 
 
             so.on('onpublishScore', (data: { userIdList: string[], result: number[] }) => {
-                let {userIdList, result} = data;
-                // host is first roller
-                let isHost = userIdList[0] == this.currUser.userId;
-                let realRst = result.map((re, i) => ((i % 2) == (isHost ? 0 : 1)) ? (re + 1) % 2 : re);
-                console.log('realRst:', this.currUser.username, realRst);
-                let isWin = realRst.filter(re => re == 1).length >= 2;
+                let t = setInterval(()=>{
+                    if(this.status = GameStatus.afterGuess){
+                        clearInterval(t);
 
+                        let {userIdList, result} = data;
+                        // host is first roller
+                        let isHost = userIdList[0] == this.currUser.userId;
+                        let realRst = result.map((re, i) => ((i % 2) == (isHost ? 0 : 1)) ? (re + 1) % 2 : re);
+                        console.log('realRst:', this.currUser.username, realRst);
+                        let isWin = realRst.filter(re => re == 1).length >= 2;
 
-                this.showRst(isWin);
+                        console.log({isWin});
+                        this.showRst(isWin);
 
-                this.status = GameStatus.gameEnd;
+                        this.status = GameStatus.gameEnd;
+
+                    }
+                },CONFIG.GAMEOVER_DURATION);
             });
 
             so.on('onround',(data)=>{
