@@ -1,4 +1,70 @@
 bugs:
+>> 0 自动放置老鼠的时候，guess方没有移动老鼠的动作
+>> 1 roll老鼠的时候，guess方不应该看到手
+2 结束的时候，计分界面要慢点
+3 guess要有倒计时
+4 * 有时候杯子要消失 *
+5 算分方式要改成点球方式
+6 图的尺寸要缩放
+
+0 post方式来传递信息，开启一个游戏
+
+／*********************************／
+／*********************************／
+／*********************************／
+／*********************************／
+
+http://172.20.10.4:3001/index.html?username=u2&userId=200&gameId=100&ext_logoUrl=./resource/assets/u2.jpeg
+
+gameServer:
+url:URI/createRoom
+  post:json  
+   signature:
+   users[
+
+    guid => 'xxxxx',
+    faceLink => 'http:://www.ww.com/xx.jpg',
+
+   ]
+   gameID
+
+  return 
+   url
+   roomID
+
+
+ url:URI/game/inProcess
+  post:json
+   roomID
+   gameGUID
+   userGUID
+
+
+
+
+lebuddy server:
+
+ url:URI/game/result
+  post:json  
+   gameGuid
+   roomID
+   userGUIDs[
+
+    {
+     guid => 'xxxxx',
+     startDate => 'xxxx-xx-xx xx:xx:xx',
+     endDate => 'xxxx-xx-xx xx:xx:xx',
+
+    }
+   ] // 从胜者到输者自动排序
+   
+  
+
+  return 
+
+
+ url:URI/user/profile
+
 1 放置老鼠,用杯子盖住
     首先需要抓起老鼠
     弹出气泡文字来提示,需要停留让玩家看到
@@ -37,4 +103,7 @@ feature:
 
 
 fixed:
+
+
+1 
 

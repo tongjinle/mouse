@@ -61,6 +61,7 @@ namespace Client {
             // dict[GameStatus.beforeHoldMouse] = ()=>{
 
             // };
+            dict[GameStatus.userHolding]=()=>{};
 
             // ********************************************************************************************************************************************
             // beforePutMouse
@@ -84,6 +85,7 @@ namespace Client {
                             return;
                         }
                         if (UserStatus.beforePutMouse == this.roller.status) {
+                            this.status=GameStatus.userHolding;
                             let cupIndex = Math.floor(Math.random() * this.cupList.length);
                             // test 
                             // if(this.currUser.animal==Animal.cat){
@@ -97,15 +99,50 @@ namespace Client {
                             let y = cu.cupSp.y+cu.cupSp.height/2-this.mouseImg.height/2;
 
                             this.hand.toggle(true);
-                            egret.Tween.get(this.mouseImg,{onChange:()=>{
-                                this.hand.sp.x = this.mouseImg.x + this.mouseImg.width/2;
-                                this.hand.sp.y = this.mouseImg.y + this.mouseImg.height/2;
-                            },onChangeObj:this})
-                                .to({x,y},800)
-                                .call(()=>{
-                                    this.reqPutMouse(this.cupList[cupIndex].index);
+                            let currX = this.mouseImg.x;
+                            let currY = this.mouseImg.y;
+                            // 把整个移动切分成steps段
+                            let steps = 10;
+                            let perX = (x-currX)/steps;
+                            let perY = (y-currY)/steps;
 
+                            let actList = [];
+                            let delay =100;
+                            for(let i=0;i<steps;i++){
+                                let x = currX+perX*i;
+                                let y = currY+perY*i;
+                                actList.push(()=>{
+                                    this.reqNotify('moveHoldMouse',{x,y});
                                 });
+                            }
+                            actList.push(()=>{
+                                this.reqPutMouse(cu.index);
+                            });
+
+                            actList.forEach((act,i)=>{
+                                setTimeout(act,i*delay);
+                            });
+                            
+
+                            // egret.Tween.get(this.mouseImg,{onChange:()=>{
+                            //     this.hand.sp.x = this.mouseImg.x + this.mouseImg.width/2;
+                            //     this.hand.sp.y = this.mouseImg.y + this.mouseImg.height/2;
+                            //     this.reqNotify('moveHoldMouse',{x,y});
+
+                            // },onChangeObj:this})
+                            //     .to({x,y},800)
+                            //     .call(()=>{
+                            //         let cupSp = this.cupList[cupIndex].cupSp;
+
+                            //         let x = cupSp.x+cupSp.width/2-this.mouseImg.width/2;
+                            //         let y = cupSp.y+cupSp.height/2-this.mouseImg.height/2;
+
+
+                            //         // this.reqNotify('moveHoldMouse',{x,y});
+
+                            //         // this.reqPutMouse(this.cupList[cupIndex].index);
+
+                            //     });
                         }
                     });
                 }else {
@@ -829,7 +866,10 @@ namespace Client {
             // console.log('touchCup', posi, cu);
             if (cu) {
                 let hand = this.hand;
-                hand.toggle(true);
+                if(this.currUser.role == Role.roller){
+                    hand.toggle(true);
+                    
+                }
 
                 let sp = cu.cupSp;
 
