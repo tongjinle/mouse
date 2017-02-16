@@ -204,7 +204,7 @@ class App {
 
                 io.to(gameId).emit(PushType.onguess, {
                     cupIndex,
-                    isCorrect: ga.scoreList[ga.scoreList.length - 1] == Score.win
+                    isCorrect: flag
                 });
 
                 // 是否要全部推送总分

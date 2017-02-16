@@ -8,9 +8,11 @@ export default class Game {
     id: string;
     // 玩家列表
     userList: User[];
+    // 当前roller玩家索引
+    currUserIndex: number;
     // 比分列表
     // 记录猜测者的对错
-    scoreList: number[];
+    scoreList: number[][];
     // 盘数
     gameCount: number = CONFIG.gameCount;
     // 已经经过的盘数
@@ -26,15 +28,30 @@ export default class Game {
     // 游戏状态
     status: GameStatus;
 
+    private calScore(list: number[]) {
+        return list.reduce((prev, num) => prev + num, 0);
+    }
+
     public get isOver(): boolean {
-        return (this.gameCount == this.roundCount)
-            || (this.scoreList.length == 2 && this.scoreList[0] != this.scoreList[1]);
+        // if (this.gameCount == this.roundCount) {
+        //     return true;
+        // }
+        if (_.find(this.scoreList, (list) => this.calScore(list) >= 3)) {
+            return true;
+        }
+        return false;
+
     }
 
     constructor(id: string, userList: User[]) {
         this.id = id;
         this.userList = userList;
+
         this.scoreList = [];
+        this.userList.forEach(() => {
+            this.scoreList.push([])
+        });
+
         this.roundCount = -1;
 
         this.round();
@@ -78,10 +95,16 @@ export default class Game {
         this.guessCupIndex = cupIndex;
         console.log('in guess mouse:', userId, cupIndex, this.roundCount);
 
-        this.scoreList.push(this.guessCupIndex == this.cupIndex ? Score.win : Score.lost);
+        // 是否猜对
+        let ret = true;
+        if(this.guessCupIndex != this.cupIndex){
+            this.scoreList[this.currUserIndex].push(Score.win);
+            ret = false;
+        }
+
         this.status = GameStatus.roundEnd;
         this.round();
-        return true;
+        return ret;
     }
 
 
@@ -89,6 +112,7 @@ export default class Game {
     // false表示已经整个游戏都已经结束了//
     round(): boolean {
         this.roundCount++;
+        this.currUserIndex = this.roundCount % this.userList.length;
         if (this.isOver) {
             this.status = GameStatus.gameEnd;
             return false;
@@ -102,7 +126,7 @@ export default class Game {
     private reset() {
         // 交换猜测者和晃动者
         this.userList.forEach((us, index) => {
-            console.log(index,this.roundCount,(index + this.roundCount) % 2);
+            console.log(index, this.roundCount, (index + this.roundCount) % 2);
             us.role = [Role.roll, Role.guess][(index + this.roundCount) % 2];
         });
 
