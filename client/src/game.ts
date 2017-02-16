@@ -205,7 +205,7 @@ namespace Client {
                         if(GameStatus.afterRolling!=this.status){
                             return ;
                         }
-                        
+
                         this.status=GameStatus.userHolding;
                         let cupIndex = Math.floor(Math.random() * this.cupList.length);
                         let cu = this.cupList[cupIndex];
@@ -233,14 +233,18 @@ namespace Client {
                 
 
                 this.userList.forEach((us, i, list) => {
-                    if ((us == this.roller && this.roller.isRoundWin)||(us == this.guesser && this.guesser.isRoundWin)) {
+                    // if ((us == this.roller && this.roller.isRoundWin)||(us == this.guesser && this.guesser.isRoundWin)) {
+                    //     this.scoreList[i]++;
+                    // }
+                    if ((us == this.roller && this.roller.isRoundWin)) {
+
                         this.scoreList[i]++;
                     }
                     
                 });
 
                 // 判断是不是已经结束
-                if (!!_.find(this.scoreList, (so) => { return so == (CONFIG.maxCount + 1) / 2; })) {
+                if (!!_.find(this.scoreList, (so) => { return so == 3; })) {
                     return;
                 }
                
@@ -618,7 +622,7 @@ namespace Client {
                         let isHost = userIdList[0] == this.currUser.userId;
                         let realRst = result.map((re, i) => ((i % 2) == (isHost ? 0 : 1)) ? (re + 1) % 2 : re);
                         console.log('realRst:', this.currUser.username, realRst);
-                        let isWin = realRst.filter(re => re == 1).length >= 2;
+                        let isWin = realRst.filter(re => re == 1).length >= 3;
 
                         console.log({isWin});
                         this.showRst(isWin);
@@ -969,10 +973,14 @@ namespace Client {
         // isWin是站在guess的角度
         addScore(isWin: boolean,next?:()=>void) {
             this.hubList.forEach(hu => {
-                if (Role.guesser == hu.user.role) {
-                    hu.user.scoreList.push(isWin);
-                    hu.addScore(isWin);
-                } else {
+                // if (Role.guesser == hu.user.role) {
+                //     hu.user.scoreList.push(isWin);
+                //     hu.addScore(isWin);
+                // } else {
+                //     hu.user.scoreList.push(!isWin);
+                //     hu.addScore(!isWin);
+                // }
+                if(Role.roller == hu.user.role){
                     hu.user.scoreList.push(!isWin);
                     hu.addScore(!isWin);
                 }
@@ -1084,7 +1092,6 @@ namespace Client {
                 this.hubList.push(hu);
             }
         }
-
 
         private createHand() {
             let hand = this.hand = new Hand();
