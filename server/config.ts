@@ -3,7 +3,7 @@ let CONFIG = {
     port:8080,
     
 	// 局数,现在是BO3
-	gameCount: 3,
+	gameCount: 6,
 	// 藏老鼠的杯子数量
 	cupCount: 3,
 

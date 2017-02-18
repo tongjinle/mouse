@@ -147,7 +147,6 @@ class App {
 
                 // 防止重复的putMouse
                 if(ga.cupIndex!==undefined){
-                	console.log(ga.cupIndex);
                 	return;
                 }
 
@@ -168,7 +167,6 @@ class App {
             });
 
             so.on(RequestType.rollCup, (data: RollCupData) => {
-                console.log(so.id, RequestType[RequestType.rollCup], data);
 
                 let ga = this.getGame(so.id);
                 let userId = this.getUserId(so.id);
@@ -210,7 +208,9 @@ class App {
                 // 是否要全部推送总分
                 if (ga.isOver) {
                     let userIdList = ga.userList.map(us => us.id);
-                    let result = ga.scoreList;
+                    let result = ga.countScore();
+
+                    console.log({result});
 
                     io.to(gameId).emit(PushType.onpublishScore, {
                         userIdList,

@@ -1,7 +1,7 @@
 import * as _ from 'underscore';
 import User from './user';
 import CONFIG from './config';
-import { Animal, Role, Position, Score, GameStatus } from './types';
+import { Animal, Role, Position, Score, GameStatus, GameScore } from './types';
 
 export default class Game {
     // id
@@ -12,7 +12,7 @@ export default class Game {
     currUserIndex: number;
     // 比分列表
     // 记录猜测者的对错
-    scoreList: number[][];
+    scoreList: number[][][];
     // 盘数
     gameCount: number = CONFIG.gameCount;
     // 已经经过的盘数
@@ -36,9 +36,46 @@ export default class Game {
         // if (this.gameCount == this.roundCount) {
         //     return true;
         // }
-        if (_.find(this.scoreList, (list) => this.calScore(list) >= 3)) {
-            return true;
+        let currIndex = this.scoreList.length - 1;
+        if(currIndex<0){return false;}
+        let currScoreList = this.scoreList[currIndex];
+        let usScoreList = currScoreList.map(list=>this.calScore(list));
+        let [u1sc,u2sc] = usScoreList;
+        // 普通轮 bo3
+        if (this.gameCount>this.roundCount) {
+            // 如果有人已经3分
+            if(u1sc==3||u1sc==3){
+                return true;
+            }
+            
+            // 或者有人现有分数已经超过对方可能得到的最大分数
+            let lastU1Sc = [3,2,2,1,1,0][this.roundCount];
+            let lastU2Sc = [3,3,2,2,1,1][this.roundCount];
+            console.log('START==******************');
+            console.log({
+                roundCount:this.roundCount,
+                u1sc,
+                u2sc,
+                lastU1Sc,
+                lastU2Sc
+            });
+            console.log('END******************');
+            if(u1sc>u2sc+lastU2Sc||u2sc>u1sc+lastU1Sc){
+                return true;
+            }
+           
+            
         }
+        // 加赛轮 bo1
+        else {
+            if((this.roundCount)%2==0){
+                if(u1sc+u2sc==1){
+
+                    return true;
+                }
+            }
+        }
+        
         return false;
 
     }
@@ -48,13 +85,22 @@ export default class Game {
         this.userList = userList;
 
         this.scoreList = [];
-        this.userList.forEach(() => {
-            this.scoreList.push([])
-        });
+
+
 
         this.roundCount = -1;
 
         this.round();
+    }
+
+    // 初始化比分
+    private initScore() {
+        let round = this.scoreList.length;
+        console.log('**************score round', round);
+        let currRound = this.scoreList[round] = [];
+        this.userList.forEach(() => {
+            currRound.push([]);
+        });
     }
 
     // 放置mouse
@@ -86,21 +132,27 @@ export default class Game {
     guessMouse(userId: string, cupIndex: number): boolean {
         let us = this.getUserById(userId);
         if (!us || us.role != Role.guess) {
+            // console.log({'inner-user':us});
             return false;
         }
         if (cupIndex < 0 || cupIndex >= this.cupCount) {
+            // console.log({'inner-cupIndex':cupIndex});
             return false;
         }
 
         this.guessCupIndex = cupIndex;
-        console.log('in guess mouse:', userId, cupIndex, this.roundCount);
+        // console.log('in guess mouse:', userId, cupIndex, this.roundCount);
 
         // 是否猜对
         let ret = true;
-        if(this.guessCupIndex != this.cupIndex){
-            this.scoreList[this.currUserIndex].push(Score.win);
+        if (this.guessCupIndex != this.cupIndex) {
+            let currScoreList = this.scoreList[this.scoreList.length - 1];
+            let userIndex: number = _.findIndex(this.userList, us => us.role == Role.roll);
+            currScoreList[userIndex].push(Score.win);
+            console.log({userIndex});
             ret = false;
         }
+
 
         this.status = GameStatus.roundEnd;
         this.round();
@@ -112,22 +164,56 @@ export default class Game {
     // false表示已经整个游戏都已经结束了//
     round(): boolean {
         this.roundCount++;
+        console.log(this.roundCount);
         this.currUserIndex = this.roundCount % this.userList.length;
         if (this.isOver) {
             this.status = GameStatus.gameEnd;
             return false;
         }
+
+        // 普通轮 roundCount == this.gameCount 切换
+        // 加赛轮 roundCount > this.gameCount && (roundCount+1) % 2 ==0 切换
+        if (this.roundCount ==0 ||
+            this.roundCount == this.gameCount ||
+            (this.roundCount > this.gameCount && (this.roundCount) % 2 == 0)) {
+            this.initScore();
+        }
+
         this.reset();
         this.status = GameStatus.beforePutMouse;
         return true;
     }
 
+    // 分数统计
+    countScore(): GameScore {
+        let scoreRound = this.scoreList.length;
+        let normalScoreList = this.scoreList[0];
+        let addScoreList = [];
+        let totalScoreList = [];
+        this.scoreList.forEach((list, i) => {
+            this.userList.forEach((u, ii) => {
+                if (i != 0) {
+                    addScoreList[ii] = addScoreList[ii] || 0;
+                    addScoreList[ii] += list[ii].length;
+                }
+                totalScoreList[ii] = totalScoreList[ii] || 0;
+                totalScoreList[ii] += list[ii].length;
+            });
+        });
+        return { scoreRound, normalScoreList, addScoreList, totalScoreList };
+    }
+
     // 重新开始
     private reset() {
         // 交换猜测者和晃动者
+        console.log('RESET-----------------');
+        console.log(this.roundCount);
         this.userList.forEach((us, index) => {
-            console.log(index, this.roundCount, (index + this.roundCount) % 2);
+            // console.log(index, this.roundCount, (index + this.roundCount) % 2);
+            console.log('before',us.name, us.role);    
             us.role = [Role.roll, Role.guess][(index + this.roundCount) % 2];
+            console.log('after',us.name, us.role);    
+            // us.role = Role.roll+Role.guess-us.role;
         });
 
         // 清空一些记录数据,把他们初始化
