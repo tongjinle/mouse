@@ -216,7 +216,14 @@ class App {
                         userIdList,
                         result
                     });
+                }else{
+                    let data ={
+                        refreshScore:ga.roundCount >= 6 && ga.roundCount%2==0
+                    };
+                    
+                    io.to(gameId).emit(PushType.onnextRound,data);
                 }
+
             });
 
             so.on('disconnect', () => {

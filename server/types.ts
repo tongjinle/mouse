@@ -54,6 +54,7 @@ export class PushType {
     static ongameStart: string = 'ongameStart';
 
     static onstatusChange: string = 'onstatusChange';
+    static onnextRound:string = 'onnextRound';
 }
 
 
