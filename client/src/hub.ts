@@ -39,24 +39,15 @@ namespace Client {
             let scoreImgName: string;
             if (HubPosition.top == this.posi) {
                 bgImgName = 'enemy_score_bg_png';
-                scoreImgName = 'enemy_score_empty_png';
             } else {
                 bgImgName = 'my_score_bg_png';
-                scoreImgName = 'my_score_empty_png';
 
             }
             this.bgImg = new egret.Bitmap(this.sh.getTexture(bgImgName));
             this.sp.addChild(this.bgImg);
 
-            for (var i = 0; i < Hub.HUB_COUNT; i++) {
-                let sc = new egret.Bitmap(this.sh.getTexture(scoreImgName));
-                let startMargin = 180;
-                let margin = (this.sp.width - 2 * startMargin - Hub.HUB_COUNT * sc.width) / (Hub.HUB_COUNT + 1);
-                sc.x = startMargin + margin + (margin + sc.width) * i;
-                sc.y = this.sp.height / 2 - sc.height / 2 + (this.posi == HubPosition.top ? -1 : 1) * 14;
-                this.sp.addChild(sc);
-                this.scoreImgList.push(sc);
-            }
+            this.resetScore();
+
         }
 
         private createLogo() {
@@ -90,8 +81,8 @@ namespace Client {
                 tx.y = 105;
                 tx.width = 145;
                 tx.height = 120;
-                tx.anchorOffsetX = tx.width*.5;
-                tx.anchorOffsetY = tx.height*.5;
+                tx.anchorOffsetX = tx.width * .5;
+                tx.anchorOffsetY = tx.height * .5;
                 tx.size = 80;
                 // tx.scaleX = tx.scaleY = 5;
                 tx.textAlign = egret.HorizontalAlign.CENTER;
@@ -112,10 +103,38 @@ namespace Client {
             this.index++;
         }
 
+        // 清空所有score
+        resetScore() {
+            let scoreImgName: string;
+            if (HubPosition.top == this.posi) {
+                scoreImgName = 'enemy_score_empty_png';
+            } else {
+                scoreImgName = 'my_score_empty_png';
+
+            }
+            for (var i = 0; i < Hub.HUB_COUNT; i++) {
+                let sc;
+                let te = this.sh.getTexture(scoreImgName)
+                if (!this.scoreImgList[i]) {
+                    this.scoreImgList.push(new egret.Bitmap());
+                }
+                sc = this.scoreImgList[i];
+
+                sc.texture = te;
+
+                let startMargin = 180;
+                let margin = (this.sp.width - 2 * startMargin - Hub.HUB_COUNT * sc.width) / (Hub.HUB_COUNT + 1);
+                sc.x = startMargin + margin + (margin + sc.width) * i;
+                sc.y = this.sp.height / 2 - sc.height / 2 + (this.posi == HubPosition.top ? -1 : 1) * 14;
+                this.sp.addChild(sc);
+            }
+            this.index = 0 ;
+        }
+
         runTimer(duration: number, next: () => void) {
             console.log('...timer...');
+            this.clearTimer();
 
-           
 
 
             this.ti = new egret.Timer(1000, duration);
@@ -125,11 +144,11 @@ namespace Client {
 
                 // 心跳动画
                 egret.Tween.get(this.timer)
-                    .to({scaleX:1.2,scaleY:1.2},500,egret.Ease.bounceInOut)
-                    .to({scaleX:1,scaleY:1},500,egret.Ease.bounceInOut)
+                    .to({ scaleX: 1.2, scaleY: 1.2 }, 500, egret.Ease.bounceInOut)
+                    .to({ scaleX: 1, scaleY: 1 }, 500, egret.Ease.bounceInOut)
 
             };
-            let timerCompeleteHandle = () => {next(); };
+            let timerCompeleteHandle = () => { next(); };
             this.ti.addEventListener(egret.TimerEvent.TIMER, timerHandle, this);
             this.ti.addEventListener(egret.TimerEvent.TIMER_COMPLETE, timerCompeleteHandle, this);
 
@@ -139,13 +158,13 @@ namespace Client {
             this.timer.text = duration.toString();
             this.ti.start();
 
-            
+
 
         }
 
         clearTimer() {
             let ti = this.ti;
-            ti.stop();
+            ti && ti.stop();
             this.timer.text = '0';
         }
     }

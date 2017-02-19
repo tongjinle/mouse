@@ -99,6 +99,7 @@ namespace Client {
                             let y = cu.cupSp.y+cu.cupSp.height/2-this.mouseImg.height/2;
 
                             this.hand.toggle(true);
+                            this.tip.hide();
                             let currX = this.mouseImg.x;
                             let currY = this.mouseImg.y;
                             // 把整个移动切分成steps段
@@ -244,15 +245,15 @@ namespace Client {
                 });
 
                 // 判断是不是已经结束
-                if (!!_.find(this.scoreList, (so) => { return so == 3; })) {
-                    return;
-                }
+                // if (!!_.find(this.scoreList, (so) => { return so == 3; })) {
+                //     return;
+                // }
                
 
-                setTimeout(()=>{
+                // setTimeout(()=>{
                     
-                    this.status = GameStatus.roundEnd;
-                },CONFIG.REST_DURATION);
+                //     this.status = GameStatus.roundEnd;
+                // },CONFIG.REST_DURATION);
             };
 
             let reRoundHandler;
@@ -611,6 +612,19 @@ namespace Client {
                 });
             });
 
+            so.on('onnextRound',(data:{refreshScore:boolean})=>{
+                console.log(this.status);
+                let t = setInterval(()=>{
+                    if(this.status == GameStatus.afterGuess){
+                        clearInterval(t);
+                        if(data.refreshScore){
+                            this.hubList.forEach(hu=>{hu.resetScore();});
+                        }
+                        this.status = GameStatus.roundEnd;
+                    }
+                },200);
+            });
+
 
             so.on('onpublishScore', (data: { userIdList: string[], result: number[] }) => {
                 let t = setInterval(()=>{
@@ -619,13 +633,14 @@ namespace Client {
 
                         let {userIdList, result} = data;
                         // host is first roller
-                        let isHost = userIdList[0] == this.currUser.userId;
-                        let realRst = result.map((re, i) => ((i % 2) == (isHost ? 0 : 1)) ? (re + 1) % 2 : re);
-                        console.log('realRst:', this.currUser.username, realRst);
-                        let isWin = realRst.filter(re => re == 1).length >= 3;
+                        // let isHost = userIdList[0] == this.currUser.userId;
+                        // let realRst = result.map((re, i) => ((i % 2) == (isHost ? 0 : 1)) ? (re + 1) % 2 : re);
+                        // console.log('realRst:', this.currUser.username, realRst);
+                        // let isWin = realRst.filter(re => re == 1).length >= 3;
 
-                        console.log({isWin});
-                        this.showRst(isWin);
+                        // console.log({isWin});
+                        // this.showRst(isWin);
+                        console.log(result);
 
                         this.status = GameStatus.gameEnd;
 
