@@ -1055,7 +1055,7 @@ namespace Client {
                 user.face.y = this.stage.stageHeight - user.face.height - 140;
             } else {
                 user.isFront = true;
-                user.face.y = 215;
+                user.face.y = 225;
             }
             face = user.face;
             face.x = this.stage.stageWidth / 2 - user.face.width / 2;
