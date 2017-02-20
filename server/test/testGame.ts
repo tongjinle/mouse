@@ -75,6 +75,19 @@ testList.push(() => {
         && !isOver;
 });
 
+// 6个回合结束，jack vs tom -》 2:1， jack胜利
+testList.push(() => {
+    let condi = [1, 0, 1,1,0,1];
+    let ga: Game = runGame(condi);
+    let score = ga.countScore();
+    let isOver = ga.isOver;
+    // console.log(score,isOver,ga.roundCount);
+    return score.normalScoreList[0].join('#') == [1, 1].join('#')
+        && score.totalScoreList[0] == 2
+        && score.totalScoreList[1] == 1
+        && isOver;
+});
+
 // 4个回合结束，jack已经2:0，所以tom在常规赛没有机会
 testList.push(() => {
     let condi = [1, 1, 1, 1];
@@ -122,6 +135,6 @@ testList.push(() => {
 
 
 
-let index=3;
-testList.slice(index,index+1).forEach(t => console.log('=============\n'+t()));
+let index=1;
+testList/*.slice(index,index+1)*/.forEach((t,i) => console.log(i+'============='+t()));
 

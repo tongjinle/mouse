@@ -47,19 +47,24 @@ export default class Game {
             if(u1sc==3||u1sc==3){
                 return true;
             }
+
+            if(this.roundCount==this.gameCount-1 && u1sc!=u2sc){
+                console.log('3 ju jieshu !');
+                return true;
+            }
             
             // 或者有人现有分数已经超过对方可能得到的最大分数
             let lastU1Sc = [3,2,2,1,1,0][this.roundCount];
             let lastU2Sc = [3,3,2,2,1,1][this.roundCount];
-            console.log('START==******************');
-            console.log({
-                roundCount:this.roundCount,
-                u1sc,
-                u2sc,
-                lastU1Sc,
-                lastU2Sc
-            });
-            console.log('END******************');
+            // console.log('START==******************');
+            // console.log({
+            //     roundCount:this.roundCount,
+            //     u1sc,
+            //     u2sc,
+            //     lastU1Sc,
+            //     lastU2Sc
+            // });
+            // console.log('END******************');
             if(u1sc>u2sc+lastU2Sc||u2sc>u1sc+lastU1Sc){
                 return true;
             }
@@ -68,7 +73,7 @@ export default class Game {
         }
         // 加赛轮 bo1
         else {
-            if((this.roundCount)%2==0){
+            if((this.roundCount+1)%2==0){
                 if(u1sc+u2sc==1){
 
                     return true;
@@ -149,7 +154,7 @@ export default class Game {
             let currScoreList = this.scoreList[this.scoreList.length - 1];
             let userIndex: number = _.findIndex(this.userList, us => us.role == Role.roll);
             currScoreList[userIndex].push(Score.win);
-            console.log({userIndex});
+            // console.log({userIndex});
             ret = false;
         }
 
@@ -163,13 +168,13 @@ export default class Game {
     // 回合
     // false表示已经整个游戏都已经结束了//
     round(): boolean {
-        this.roundCount++;
-        console.log(this.roundCount);
-        this.currUserIndex = this.roundCount % this.userList.length;
+        // console.log(this.roundCount);
         if (this.isOver) {
             this.status = GameStatus.gameEnd;
             return false;
         }
+        this.roundCount++;
+        this.currUserIndex = this.roundCount % this.userList.length;
 
         // 普通轮 roundCount == this.gameCount 切换
         // 加赛轮 roundCount > this.gameCount && (roundCount+1) % 2 ==0 切换
@@ -206,13 +211,13 @@ export default class Game {
     // 重新开始
     private reset() {
         // 交换猜测者和晃动者
-        console.log('RESET-----------------');
-        console.log(this.roundCount);
+        // console.log('RESET-----------------');
+        // console.log(this.roundCount);
         this.userList.forEach((us, index) => {
             // console.log(index, this.roundCount, (index + this.roundCount) % 2);
-            console.log('before',us.name, us.role);    
+            // console.log('before',us.name, us.role);    
             us.role = [Role.roll, Role.guess][(index + this.roundCount) % 2];
-            console.log('after',us.name, us.role);    
+            // console.log('after',us.name, us.role);    
             // us.role = Role.roll+Role.guess-us.role;
         });
 
