@@ -14,7 +14,7 @@ namespace Client {
         // GUESS_DURATION:5,
 
         PUT_MOUSE_DURATION:4,
-        ROLL_DURATION: 2,
+        ROLL_DURATION: 5,
         GUESS_DURATION:5,
 
 

@@ -75,7 +75,7 @@ namespace Client {
 
                 if (this.currUser.role == Role.roller) {
                     // show tips
-                    // this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
+                    this.tip.showMsg(CONFIG.PUT_MOUSE_TIP, CONFIG.PUT_MOUSE_TIP_DURATION, () => { });
                    
                     // 超时没有放置mouse,就会随机在一个cup中放置mouse
                     // mock
@@ -405,6 +405,8 @@ namespace Client {
                     let currAniCup = this.currAniCup;
                     if (cu) {
                         console.log('cu:',cu);
+                        // this.status = GameStatus.userHolding;
+
                         this.reqPutMouse(cu.index);
                                             
                     }
@@ -467,6 +469,8 @@ namespace Client {
                             return;
                         }
                         this.currGuessCupIndex = cu.index;
+                        this.status = GameStatus.userHolding;
+
                         this.reqGuess(cu.index);
                     },
                     context:this,
@@ -488,9 +492,9 @@ namespace Client {
                         return;
                     }
 
-                    if (this.roller.status != UserStatus.beforeRolling) {
-                        return;
-                    }
+                    // if (this.roller.status != UserStatus.beforeRolling) {
+                    //     return;
+                    // }
 
                     let x = e.stageX;
                     let y = e.stageY;
@@ -500,6 +504,7 @@ namespace Client {
 
                     let cu = this.getCupByPosi({ x, y });
                     if (cu) {
+                        // this.status = GameStatus.userHolding;
                         this.reqTouchCup({ x, y });
                         // this.touchCup({ x, y });
                     }
@@ -525,6 +530,7 @@ namespace Client {
                     }
 
                     // this.currCup = _.find(this.cupList,cu=>cu.hasMouse);
+                    this.tip.hide();
                     this.reqRollCup({ x: e.stageX, y: e.stageY });
 
 
@@ -651,6 +657,12 @@ namespace Client {
             so.on('onround',(data)=>{
 
             });
+
+
+            so.on('onleaveRoom', (data: { userId: string }) => {
+                this.status = GameStatus.userHolding;
+                console.log('game end');
+            }); 
         }
 
 
@@ -720,7 +732,6 @@ namespace Client {
                 let sp = tip.sp;
                 sp.x = mo.x + mo.width/2;
                 sp.y = mo.y-mo.height-30;
-                tip.showMsg(CONFIG.SHOW_MOUSE_TIP, CONFIG.SHOW_MOUSE_TIP_DURATION, next);
 
             }
         }
