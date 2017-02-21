@@ -154,9 +154,22 @@ testList.push(() => {
         && !isOver;
 });
 
+// 7
+testList.push(() => {
+    let condi = [1,0,1,0,1];
+    let ga: Game = runGame(condi);
+    let score = ga.countScore();
+    let isOver = ga.isOver;
+    console.log(score,isOver);
+    return score.normalScoreList[0].join('#') == [1, 1,1].join('#')
+        && score.totalScoreList[0] == 3
+        && score.totalScoreList[1] == 2
+        && !isOver;
+});
 
 
-let index=2;
+
+let index=6;
 testList
 // .slice(index,index+1)
 .forEach((t,i) => console.log(i+'============='+t()));

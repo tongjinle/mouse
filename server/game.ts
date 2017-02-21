@@ -44,9 +44,9 @@ export default class Game {
         // 普通轮 bo3
         if (this.gameCount>this.roundCount) {
             // 如果有人已经3分
-            if(u1sc==3||u1sc==3){
-                return true;
-            }
+            // if(u1sc==3||u1sc==3){
+            //     return true;
+            // }
 
             if(this.endRoundCount==this.gameCount-1 && u1sc!=u2sc){
                 console.log('3 ju jieshu !');
