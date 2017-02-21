@@ -63,6 +63,7 @@ let runGame = (condi: number[]) => {
 
 };
 
+// *1*
 // 3个回合结束，jack vs tom -》 2:0， tom还有机会
 testList.push(() => {
     let condi = [1, 0, 1];
@@ -75,31 +76,36 @@ testList.push(() => {
         && !isOver;
 });
 
+// 2
 // 6个回合结束，jack vs tom -》 2:1， jack胜利
 testList.push(() => {
     let condi = [1, 0, 1,1,0,1];
     let ga: Game = runGame(condi);
     let score = ga.countScore();
     let isOver = ga.isOver;
-    // console.log(score,isOver,ga.roundCount);
+    console.log(score,isOver,ga.roundCount);
     return score.normalScoreList[0].join('#') == [1, 1].join('#')
         && score.totalScoreList[0] == 2
         && score.totalScoreList[1] == 1
         && isOver;
 });
 
+//3
 // 4个回合结束，jack已经2:0，所以tom在常规赛没有机会
 testList.push(() => {
     let condi = [1, 1, 1, 1];
     let ga: Game = runGame(condi);
     let score = ga.countScore();
     let isOver = ga.isOver;
+    console.log(score,isOver,ga.roundCount,ga.endRoundCount);
+
     return score.normalScoreList[0].join('#') == [1, 1].join('#')
         && score.totalScoreList[0] == 2
         && score.totalScoreList[1] == 0
         && isOver;
 });
 
+// 4
 // 常规赛打平 2:2
 // 第一轮加赛1:1
 // 第二轮加赛0:0
@@ -111,7 +117,7 @@ testList.push(() => {
     let ga: Game = runGame(condi);
     let score = ga.countScore();
     let isOver = ga.isOver;
-    console.log(ga.scoreList);
+    // console.log(ga.scoreList);
     return score.normalScoreList[0].join('#') == [1, 1].join('#')
         && score.normalScoreList[1].join('#') == [1, 1].join('#')
         && score.addScoreList[0] == 1
@@ -122,6 +128,8 @@ testList.push(() => {
         && isOver;
 });
 
+
+// 5
 testList.push(() => {
     let condi = [1, 0, 1, 0, 0, 1,/**/1, 1];
     let ga: Game = runGame(condi);
@@ -133,8 +141,23 @@ testList.push(() => {
         && isOver;
 });
 
+// 6
+testList.push(() => {
+    let condi = [1,1,0,0,1];
+    let ga: Game = runGame(condi);
+    let score = ga.countScore();
+    let isOver = ga.isOver;
+    console.log(score,isOver);
+    return score.normalScoreList[0].join('#') == [1, 1].join('#')
+        && score.totalScoreList[0] == 2
+        && score.totalScoreList[1] == 1
+        && !isOver;
+});
 
 
-let index=1;
-testList/*.slice(index,index+1)*/.forEach((t,i) => console.log(i+'============='+t()));
+
+let index=2;
+testList
+// .slice(index,index+1)
+.forEach((t,i) => console.log(i+'============='+t()));
 

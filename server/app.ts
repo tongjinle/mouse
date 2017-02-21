@@ -103,6 +103,10 @@ class App {
             so.on(RequestType.enterRoom, (data: EnterRoomData) => {
                 let sid = so.id;
                 let gameId = data.gameId;
+
+                
+               
+
                 // 记录sid对应的信息
                 this.joinRoom(sid, data);
                 so.join(data.gameId);
@@ -216,6 +220,7 @@ class App {
                         userIdList,
                         result
                     });
+                    this.delGame(gameId);
                 }else{
                     let data ={
                         refreshScore:ga.roundCount >= 6 && ga.roundCount%2==0

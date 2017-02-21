@@ -48,7 +48,7 @@ export default class Game {
                 return true;
             }
 
-            if(this.roundCount==this.gameCount-1 && u1sc!=u2sc){
+            if(this.endRoundCount==this.gameCount-1 && u1sc!=u2sc){
                 console.log('3 ju jieshu !');
                 return true;
             }
@@ -73,7 +73,7 @@ export default class Game {
         }
         // 加赛轮 bo1
         else {
-            if((this.roundCount+1)%2==0){
+            if((this.endRoundCount+1)%2==0){
                 if(u1sc+u2sc==1){
 
                     return true;
@@ -150,6 +150,7 @@ export default class Game {
 
         // 是否猜对
         let ret = true;
+        // 如果猜错
         if (this.guessCupIndex != this.cupIndex) {
             let currScoreList = this.scoreList[this.scoreList.length - 1];
             let userIndex: number = _.findIndex(this.userList, us => us.role == Role.roll);
@@ -157,14 +158,14 @@ export default class Game {
             // console.log({userIndex});
             ret = false;
         }
-
+        this.endRoundCount = this.roundCount;
 
         this.status = GameStatus.roundEnd;
         this.round();
         return ret;
     }
 
-
+    endRoundCount:number;
     // 回合
     // false表示已经整个游戏都已经结束了//
     round(): boolean {
@@ -174,6 +175,7 @@ export default class Game {
             return false;
         }
         this.roundCount++;
+        this.endRoundCount = this.roundCount-1;
         this.currUserIndex = this.roundCount % this.userList.length;
 
         // 普通轮 roundCount == this.gameCount 切换
