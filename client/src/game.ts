@@ -632,22 +632,20 @@ namespace Client {
             });
 
 
-            so.on('onpublishScore', (data: { userIdList: string[], result: number[] }) => {
+            so.on('onpublishScore', (data: Client.GameScore) => {
                 let t = setInterval(()=>{
                     if(this.status == GameStatus.afterGuess){
                         clearInterval(t);
 
-                        let {userIdList, result} = data;
                         // host is first roller
                         // let isHost = userIdList[0] == this.currUser.userId;
                         // let realRst = result.map((re, i) => ((i % 2) == (isHost ? 0 : 1)) ? (re + 1) % 2 : re);
                         // console.log('realRst:', this.currUser.username, realRst);
                         // let isWin = realRst.filter(re => re == 1).length >= 3;
 
-                        // console.log({isWin});
+                        console.log({data});
                         // this.showRst(isWin);
-                        console.log(result);
-
+                        this.showRst(data);
                         this.status = GameStatus.gameEnd;
 
                     }
@@ -670,7 +668,14 @@ namespace Client {
         start() {
             // this.status = GameStatus.beforeShowMouse;
             this.status = GameStatus.beforePutMouse;
-            // this.showRst(true);
+            // let score:GameScore ={
+            //     scoreRound:0,
+            //     userIdList:['100','200'],
+            //     normalScoreList:[[1,1],[1]],
+            //     addScoreList:[],
+            //     totalScoreList:[2,1]
+            // };
+            // this.showRst(score);
             // this.playAudio('bgm_mp3','bgm');
         }
 
@@ -1015,19 +1020,18 @@ namespace Client {
             next && next();
         }
 
-        showRst(isWin:boolean){
-            console.log('showRst',isWin);
+        showRst(score:GameScore){
             // mask
-            let ma = new egret.Shape();
-            ma.graphics.beginFill(0x000000,.8);
-            ma.graphics.drawRect(0,0,this.stage.stageWidth,this.stage.stageHeight);
-            ma.graphics.endFill();
-            this.stage.addChild(ma);
+            // let ma = new egret.Shape();
+            // ma.graphics.beginFill(0x000000,.8);
+            // ma.graphics.drawRect(0,0,this.stage.stageWidth,this.stage.stageHeight);
+            // ma.graphics.endFill();
+            // this.stage.addChild(ma);
 
             // scoreBoard
-            let sb = new ScoreBoard(this.currUser.animal,isWin);
-            sb.sp.x = this.stage.stageWidth/2 - sb.sp.width/2;
-            sb.sp.y=200;
+            let sb = new ScoreBoard(this.currUser.userId, this.currUser.animal,score,this.stage);
+            // sb.sp.x = this.stage.stageWidth/2 - sb.sp.width/2;
+            // sb.sp.y=200;
             this.stage.addChild(sb.sp);
         }
 

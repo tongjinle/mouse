@@ -71,4 +71,13 @@ namespace Client {
         top,
         bottom
     }
+
+
+    export interface GameScore {
+        scoreRound: number,
+        userIdList:string[],
+        normalScoreList: number[][],
+        addScoreList: number[],
+        totalScoreList: number[]
+    }
 }
