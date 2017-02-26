@@ -618,15 +618,27 @@ namespace Client {
                 });
             });
 
-            so.on('onnextRound',(data:{refreshScore:boolean})=>{
+            so.on('onnextRound',(data:{refreshScore:number})=>{
                 console.log(this.status);
                 let t = setInterval(()=>{
                     if(this.status == GameStatus.afterGuess){
                         clearInterval(t);
-                        if(data.refreshScore){
-                            this.hubList.forEach(hu=>{hu.resetScore();});
-                        }
-                        this.status = GameStatus.roundEnd;
+                        // 此处的延迟用以给animal胜负后的特殊表情的展示时间
+                        setTimeout(()=>{
+                            if(data.refreshScore){
+                                this.hubList.forEach(hu=>{hu.resetScore();});
+                                let msg = (data.refreshScore == 1?'双方平局':'')+'加赛第1轮';
+                                this.tip.showMsg(msg,2000,()=>{
+                                    this.status = GameStatus.roundEnd;
+
+                                });
+                                this.tip.sp.x = this.stage.width/2 -this.tip.sp.width/2;
+                                this.tip.sp.y = this.stage.height/2;
+                            }else {
+                                this.status = GameStatus.roundEnd;
+                            }
+                            
+                        },2000);
                     }
                 },200);
             });

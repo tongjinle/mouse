@@ -12,8 +12,8 @@ namespace Client{
             this.sh = RES.getRes('scoreBoard_png');
             this.sp = new egret.Sprite();
 
-            this.sp.width = stage.width;
-            this.sp.height= stage.height;
+            this.sp.width = stage.stageWidth;
+            this.sp.height= stage.stageHeight;
 
             this.userId = userId;
             this.animal = animal;
