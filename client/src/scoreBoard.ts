@@ -82,7 +82,7 @@ namespace Client{
             ti.addEventListener(egret.TimerEvent.TIMER,()=>{
                 index = (index+1)%count;
                 let name = `w_0${index}_png`;
-                console.log(name);
+                // console.log(name);
                 li.texture = this.sh.getTexture(name); 
             },this);
             ti.start();

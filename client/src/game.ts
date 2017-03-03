@@ -618,7 +618,7 @@ namespace Client {
                 });
             });
 
-            so.on('onnextRound',(data:{refreshScore:number})=>{
+            so.on('onnextRound',(data:{refreshScore:boolean,scoreRound:number})=>{
                 console.log(this.status);
                 let t = setInterval(()=>{
                     if(this.status == GameStatus.afterGuess){
@@ -627,7 +627,8 @@ namespace Client {
                         setTimeout(()=>{
                             if(data.refreshScore){
                                 this.hubList.forEach(hu=>{hu.resetScore();});
-                                let msg = (data.refreshScore == 1?'双方平局':'')+'加赛第1轮';
+                                let msg = (data.scoreRound == 1?'双方平局,':'')+'加赛第'+data.scoreRound+'轮';
+                                console.log(msg);
                                 this.tip.showMsg(msg,2000,()=>{
                                     this.status = GameStatus.roundEnd;
 
