@@ -45,7 +45,8 @@ namespace Client {
         }
 
         toggle(isShow:boolean) {
-            this.sp.visible = isShow;
+            // this.sp.visible = isShow;
+            
         }
     }
 }

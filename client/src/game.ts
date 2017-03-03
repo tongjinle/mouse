@@ -174,7 +174,7 @@ namespace Client {
                 }
 
                 // hand的显示
-                this.hand.sp.visible = Role.roller == this.currUser.role;
+                this.hand.toggle (Role.roller == this.currUser.role);
 
 
                 this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
