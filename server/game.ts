@@ -193,10 +193,11 @@ export default class Game {
 
     // 分数统计
     countScore(): GameScore {
-        let scoreRound = this.scoreList.length;
+        let scoreRound = this.scoreList.length-1;
         let normalScoreList = this.scoreList[0];
         let addScoreList = [];
         let totalScoreList = [];
+        let userIdList = this.userList.map(us=>us.id);
         this.scoreList.forEach((list, i) => {
             this.userList.forEach((u, ii) => {
                 if (i != 0) {
@@ -207,7 +208,7 @@ export default class Game {
                 totalScoreList[ii] += list[ii].length;
             });
         });
-        return { scoreRound, normalScoreList, addScoreList, totalScoreList };
+        return { scoreRound,userIdList, normalScoreList, addScoreList, totalScoreList };
     }
 
     // 重新开始

@@ -167,6 +167,19 @@ testList.push(() => {
         && !isOver;
 });
 
+// 8
+testList.push(() => {
+    let condi = [1,0,1,1,1];
+    let ga: Game = runGame(condi);
+    let score = ga.countScore();
+    let isOver = ga.isOver;
+    console.log(score,isOver);
+    return score.normalScoreList[0].join('#') == [1, 1,1].join('#')
+        && score.totalScoreList[0] == 3
+        && score.totalScoreList[1] == 1
+        && isOver;
+});
+
 
 
 let index=6;

@@ -54,7 +54,7 @@ export class PushType {
     static ongameStart: string = 'ongameStart';
 
     static onstatusChange: string = 'onstatusChange';
-    static onnextRound:string = 'onnextRound';
+    static onnextRound: string = 'onnextRound';
 }
 
 
@@ -87,8 +87,9 @@ export interface RollCupData {
 
 export interface GameScore {
     scoreRound: number,
+    userIdList: string[],
     normalScoreList: number[][],
-    addScoreList: number[], 
+    addScoreList: number[],
     totalScoreList: number[]
 }
 

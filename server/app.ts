@@ -35,17 +35,11 @@ class App {
 
 
         app.listen(port, () => {
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
-            console.log('..............');
+            let count = 10;
+            while(count--){
+                console.log('..............');
+                
+            }
             console.log(new Date().toLocaleString());
         });
         this.bind(io);
@@ -104,8 +98,7 @@ class App {
                 let sid = so.id;
                 let gameId = data.gameId;
 
-                
-               
+              
 
                 // 记录sid对应的信息
                 this.joinRoom(sid, data);
@@ -141,6 +134,9 @@ class App {
             // notify
             so.on('notify',(data:{type:string,data:any})=>{
                 let ga = this.getGame(so.id);
+                if(!ga){
+                    return;
+                }
                 let gameId = ga.id;
                 io.to(gameId).emit('onnotify',data);
 
@@ -148,6 +144,9 @@ class App {
 
             so.on(RequestType.putMouse, (data: PutMouseData) => {
                 let ga = this.getGame(so.id);
+                if(!ga){
+                    return;
+                }
 
                 // 防止重复的putMouse
                 if(ga.cupIndex!==undefined){
@@ -164,6 +163,9 @@ class App {
 
             so.on(RequestType.touchCup, (data: TouchCupData) => {
                 let ga = this.getGame(so.id);
+                if(!ga){
+                    return;
+                }
                 let gameId = ga.id;
                 let flag = true;
                 let {posi} = data;
@@ -173,6 +175,9 @@ class App {
             so.on(RequestType.rollCup, (data: RollCupData) => {
 
                 let ga = this.getGame(so.id);
+                if(!ga){
+                    return;
+                }
                 let userId = this.getUserId(so.id);
                 let {posi} = data;
 
@@ -185,6 +190,10 @@ class App {
 
             so.on(RequestType.releaseCup,()=>{
             	let ga = this.getGame(so.id);
+                if(!ga){
+                    return;
+                }
+
                 let gameId = ga.id;
                 let flag = true;
                 io.to(gameId).emit(PushType.onreleaseCup, { flag });
@@ -192,6 +201,9 @@ class App {
 
             so.on(RequestType.guess, (data: GuessData) => {
                 let ga = this.getGame(so.id);
+                if(!ga){
+                    return;
+                }
 
                 // 防止重复guess
                 if(ga.guessCupIndex!==undefined){
@@ -213,17 +225,16 @@ class App {
                 if (ga.isOver) {
                     let userIdList = ga.userList.map(us => us.id);
                     let result = ga.countScore();
-
                     console.log({result});
 
-                    io.to(gameId).emit(PushType.onpublishScore, {
-                        userIdList,
-                        result
-                    });
+                    io.to(gameId).emit(PushType.onpublishScore, result);
                     this.delGame(gameId);
                 }else{
+                    let scoreRound:number = ga.countScore().scoreRound;
+                    console.log({scoreRound});
                     let data ={
-                        refreshScore:ga.roundCount >= 6 && ga.roundCount%2==0
+                        refreshScore:ga.roundCount >= 6 && ga.roundCount%2==0,
+                        scoreRound
                     };
                     
                     io.to(gameId).emit(PushType.onnextRound,data);
