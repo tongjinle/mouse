@@ -27,6 +27,14 @@ namespace Client {
             return this._mouseImg;
         }
 
+        private showWaitMsg(msg: string) {
+            let tip = this.tip;
+            tip.sp.x = this.stage.stageWidth / 2;
+            tip.sp.y = 720;
+
+            tip.showMsg(msg, Infinity, () => { });
+        }
+
 
         private so: SocketIOClient.Socket;
 
@@ -147,8 +155,11 @@ namespace Client {
                         }
                     });
                 } else {
-                    this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
-                    });
+                    // this.currHub.runTimer(CONFIG.PUT_MOUSE_DURATION, () => {
+                    // });
+
+                    // this.tip.showMsg(CONFIG.SHOW_MOUSE_TIP2,60000,()=>{});
+                    this.showWaitMsg(CONFIG.PUT_MOUSE_TIP2);
                 }
             };
 
@@ -174,15 +185,23 @@ namespace Client {
                 }
 
                 // hand的显示
-                this.hand.toggle (Role.roller == this.currUser.role);
+                this.hand.toggle(Role.roller == this.currUser.role);
 
 
-                this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
-                    if (Role.roller == this.currUser.role && UserStatus.rolling == this.currUser.status) {
-                        this.reqReleaseCup();
-                    }
-                    this.status = GameStatus.afterRolling;
-                });
+                if (Role.roller == this.currUser.role) {
+                    this.currHub.runTimer(CONFIG.ROLL_DURATION, () => {
+                        if (UserStatus.rolling == this.currUser.status) {
+                            this.reqReleaseCup();
+                        }
+                        console.error('after rolling');
+                        this.status = GameStatus.afterRolling;
+                    });
+                } else {
+                    this.showWaitMsg(CONFIG.ROLL_TIP2);
+                    setTimeout(() => {
+                        this.status = GameStatus.afterRolling;
+                    }, (CONFIG.ROLL_DURATION) * 1000);
+                }
             };
 
 
@@ -196,10 +215,17 @@ namespace Client {
 
 
                 if (Role.guesser == this.currUser.role) {
-                    this.tip.showMsg(CONFIG.GUESS_MOUSE_TIP, CONFIG.GUESS_MOUSE_TIP_DURATION, () => { });
+                    this.tip.showMsg(CONFIG.GUESS_MOUSE_TIP, CONFIG.GUESS_MOUSE_TIP_DURATION, () => {
+
+
+                    });
                     this.tip.sp.x = this.stage.stageWidth / 2;
                     this.tip.sp.y = 720;
+                } else {
+                    this.showWaitMsg(CONFIG.GUESS_MOUSE_TIP2);
                 }
+
+
 
                 this.currHub.runTimer(CONFIG.GUESS_DURATION, () => {
                     if (Role.guesser == this.currUser.role) {
@@ -263,8 +289,6 @@ namespace Client {
                 // cupList
                 this.resetCup();
 
-                // mouseImg
-                this.mouseImg.alpha = 0;
 
                 // curr...
                 this.currCup = undefined;
@@ -272,11 +296,14 @@ namespace Client {
                 this.currGuessCupIndex = undefined;
 
 
-                // face
+                // role face
                 this.userList.forEach(us => {
                     us.role = Role.guesser == us.role ? Role.roller : Role.guesser;
                     us.resetRole(us.role);
                 });
+
+                // mouseImg
+                this.mouseImg.alpha = 0;
 
                 reRoundHandler = setTimeout(() => {
                     this.status = GameStatus.beforePutMouse;
@@ -573,6 +600,14 @@ namespace Client {
                     // roller和guesser的视觉效果是左右相反的
                     if (Role.guesser == this.currUser.role) {
                         x = this.stage.stageWidth - x;
+                        // y
+                        let mid = this.cupList[0].cupSp.y + this.cupList[0].cupSp.height / 2;
+                        let bottom = CONFIG.myMouseY;
+                        let top = CONFIG.otherMouseY;
+                        let dist1 = Math.abs(mid - bottom);
+                        let dist2 = Math.abs(mid - top);
+                        let delatY = Math.abs(y - bottom);
+                        y = top + (delatY / dist1) * dist2;
                     }
                     this.moveMouse(x, y);
                 }
@@ -605,8 +640,12 @@ namespace Client {
                 // if (Role.roller == this.currUser.role) {
                 //     return;
                 // }
-                let {posi} = data;
-                this.rollCup(posi.x);
+                let {x} = data.posi;
+                // guesser和roller的视角效果不一样
+                if (Role.guesser == this.currUser.role) {
+                    x = this.stage.stageWidth - x - this.cupList[0].cupSp.width;
+                }
+                this.rollCup(x);
 
             });
 
@@ -748,7 +787,13 @@ namespace Client {
             mo.alpha = 1;
             mo.visible = true;
             mo.x = this.stage.stageWidth / 2 - mo.width / 2;
-            mo.y = this.stage.stageHeight - 550;
+            if (Role.roller == this.currUser.role) {
+                mo.y = this.stage.stageHeight - 550;
+
+            } else {
+                mo.y = 400;
+            }
+
             if (Role.roller == this.currUser.role) {
                 let tip = this.tip;
                 let sp = tip.sp;
@@ -809,13 +854,13 @@ namespace Client {
             let ani = this.openAni;
             ani.img.visible = true;
             // console.log()
-            ani.img.anchorOffsetX = frames[0].textureWidth/2;
+            ani.img.anchorOffsetX = frames[0].textureWidth / 2;
 
             // roller和guesser的视角不同
-            if(Role.guesser == this.currUser.role){
+            if (Role.guesser == this.currUser.role) {
                 ani.img.skewY = 180;
-            }else {
-                ani.img.skewY =0;
+            } else {
+                ani.img.skewY = 0;
             }
 
             cup.cupSp.visible = false;
@@ -1115,7 +1160,7 @@ namespace Client {
                 let margin = (this.stage.stageWidth - cupCount * sp.width) / (cupCount + 1);
                 // roller和guesser的视角差别
                 let realIndex = Role.guesser == this.currUser.role ?
-                    cupCount - 1 - i:
+                    cupCount - 1 - i :
                     i;
                 sp.x = margin + (sp.width + margin) * realIndex;
                 sp.y = this.stage.height / 2 - 120;
